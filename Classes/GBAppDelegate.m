@@ -10,7 +10,6 @@
 #import "GBPreferencesGithubViewController.h"
 #import "GBPreferencesConfigViewController.h"
 #import "GBPreferencesIgnoreViewController.h"
-#import "GBPreferencesLicenseViewController.h"
 #import "GBPreferencesUpdatesViewController.h"
 
 #import "GBPromptController.h"
@@ -25,7 +24,6 @@
 
 #import "GBOptimizeRepositoryController.h"
 
-#import "OALicenseNumberCheck.h"
 #import "OATask.h"
 
 #import "GBAsyncUpdater.h"
@@ -49,7 +47,6 @@
 @property(nonatomic) MASPreferencesWindowController* preferencesController;
 @property(nonatomic) NSMutableArray* URLsToOpenAfterLaunch;
 
-@property(nonatomic) IBOutlet NSTextView* licenseTextView;
 @property(nonatomic) IBOutlet NSMenuItem* checkForUpdatesMenuItem;
 @property(nonatomic) IBOutlet NSMenuItem* welcomeMenuItem;
 @property(nonatomic) IBOutlet NSMenuItem* rateInAppStoreMenuItem;
@@ -58,7 +55,6 @@
 
 @implementation GBAppDelegate {
 	NSUInteger _diffToolsControllerIndex;
-	NSUInteger _licenseControllerIndex;
 }
 
 + (void) initialize
@@ -124,12 +120,6 @@
 {
 	NSString* urlString = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"GBHelpURL"];
 	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:urlString]];
-}
-
-- (IBAction) showLicense:(id)sender
-{
-	[self.preferencesController selectControllerAtIndex:_licenseControllerIndex];
-	[self.preferencesController showWindow:nil];
 }
 
 - (IBAction) showDiffToolPreferences:(id)sender
@@ -233,32 +223,13 @@
 	
 	self.windowController = [GBMainWindowController instance];
 	
-#if GITBOX_APP_STORE
-	void(^removeMenuItem)(NSMenuItem*) = ^(NSMenuItem* item) {
-		if (item) [[item menu] removeItem:item];
-	};
-	removeMenuItem(self.licenseMenuItem);
-	removeMenuItem(self.checkForUpdatesMenuItem);
-#endif
-	
-	// @todo: jeff
-//	self.licenseTextView.string = [NSString stringWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"GitboxLicense" ofType:@"txt"] encoding:NSUTF8StringEncoding error:NULL];
-	
-#if GITBOX_APP_STORE
 	NSArray* preferencesControllers = [NSArray arrayWithObjects:
 									   [GBPreferencesDiffViewController controller],
 									   [GBPreferencesConfigViewController controller],
-									   nil];
-
-#else
-	NSArray* preferencesControllers = [NSArray arrayWithObjects:
-									   [GBPreferencesDiffViewController controller],
-									   [GBPreferencesConfigViewController controller],
+#if !GITBOX_APP_STORE
 									   [GBPreferencesUpdatesViewController controller],
-									   [GBPreferencesLicenseViewController controller],
-									   nil];
-	_licenseControllerIndex = 3;
 #endif
+									   nil];
 	
 	_diffToolsControllerIndex = 0;
 	

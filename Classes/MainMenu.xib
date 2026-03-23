@@ -620,7 +620,6 @@ DQ
         <customObject id="530" customClass="GBAppDelegate">
             <connections>
                 <outlet property="checkForUpdatesMenuItem" destination="1001" id="1018"/>
-                <outlet property="licenseTextView" destination="913" id="1112"/>
                 <outlet property="rateInAppStoreMenuItem" destination="1019" id="1021"/>
                 <outlet property="welcomeMenuItem" destination="915" id="1016"/>
             </connections>

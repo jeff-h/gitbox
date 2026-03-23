@@ -8,7 +8,6 @@
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="GBSidebarController">
             <connections>
-                <outlet property="buyButton" destination="27" id="30"/>
                 <outlet property="outlineView" destination="5" id="12"/>
                 <outlet property="view" destination="25" id="26"/>
             </connections>
@@ -63,17 +62,6 @@
                         <autoresizingMask key="autoresizingMask"/>
                     </scroller>
                 </scrollView>
-                <button hidden="YES" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="27">
-                    <rect key="frame" x="91" y="18" width="79" height="19"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                    <buttonCell key="cell" type="roundRect" title="Buy Now" bezelStyle="roundedRect" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="28">
-                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                        <font key="font" metaFont="cellTitle"/>
-                    </buttonCell>
-                    <connections>
-                        <action selector="showLicense:" target="-1" id="29"/>
-                    </connections>
-                </button>
             </subviews>
             <point key="canvasLocation" x="80" y="149"/>
         </customView>

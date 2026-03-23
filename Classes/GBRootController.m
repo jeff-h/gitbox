@@ -9,7 +9,6 @@
 #import "GBSidebarItem.h"
 #import "NSObject+OASelectorNotifications.h"
 #import "NSArray+OAArrayHelpers.h"
-#import "OALicenseNumberCheck.h"
 #import "OAPropertyListRepresentation.h"
 #import "OAMultipleSelection.h"
 

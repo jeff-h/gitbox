@@ -1,7 +1,6 @@
 #import "GBSubmoduleController.h"
 #import "GBSubmodule.h"
 #import "GBRepository.h"
-#import "GBSubmoduleCell.h"
 #import "GBSidebarItem.h"
 #import "GBStage.h"
 #import "NSObject+OASelectorNotifications.h"
@@ -33,7 +32,6 @@
 		self.sidebarItem.draggable = NO;
 		self.sidebarItem.selectable = YES;
 		self.sidebarItem.editable = NO;
-		self.sidebarItem.cell = [[GBSubmoduleCell alloc] initWithItem:self.sidebarItem];
 	}
 	return self;
 }
@@ -80,6 +78,21 @@
 - (BOOL) isSubmoduleClean
 {
 	return self.repository.stage.totalPendingChanges == 0;
+}
+
+- (NSString*) sidebarItemActionButtonTitle
+{
+	if (self.sidebarItem.visibleSpinning) return nil;
+	if ([self.submodule.status isEqualToString:GBSubmoduleStatusNotUpToDate])
+	{
+		return NSLocalizedString(@"Reset", @"GBSubmodule");
+	}
+	return nil;
+}
+
+- (SEL) sidebarItemActionButtonAction
+{
+	return @selector(resetSubmodule:);
 }
 
 - (void) start

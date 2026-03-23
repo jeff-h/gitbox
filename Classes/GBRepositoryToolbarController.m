@@ -247,9 +247,10 @@
 	
 	[super update];
 	
+	[self appendItemWithIdentifier:@"GBAdd"];
 	if ([self wantsSettingsButton])
 	{
-		[self.toolbar insertItemWithItemIdentifier:@"GBSettings" atIndex:1];
+		[self appendItemWithIdentifier:@"GBSettings"];
 	}
 	[self appendItemWithIdentifier:@"GBCurrentBranch"];
 	

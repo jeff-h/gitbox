@@ -12,8 +12,6 @@
 
 #import "NSFileManager+OAFileManagerHelpers.h"
 #import "NSArray+OAArrayHelpers.h"
-#import "OALicenseNumberCheck.h"
-#import "OAObfuscatedLicenseCheck.h"
 #import "OABlockQueue.h"
 #import "OAFSEventStream.h"
 #import "NSAlert+OAAlertHelpers.h"
@@ -31,9 +29,6 @@
 
 - (void) configureRepositoryController:(GBRepositoryController*)repoCtrl;
 - (void) startRepositoryController:(GBRepositoryController*)repoCtrl;
-
-// Returns YES if allows additional repos, returns NO and opens license dialog otherwise.
-- (BOOL) validateAdditionalRepositories:(NSUInteger)additionalRepos;
 
 @end
 
@@ -92,11 +87,6 @@
 
 - (IBAction) openDocument:(id)sender
 {
-	if (![self validateAdditionalRepositories:1])
-	{
-		return;
-	}
-	
 	// Getting the context group before presenting a sheet to handle a clicked item in sidebar.
 	NSUInteger insertionIndex = 0;
 	GBRepositoriesGroup* aGroup = [self contextGroupAndIndex:&insertionIndex];
@@ -173,11 +163,6 @@
 
 - (IBAction) cloneRepository:(id)sender
 {
-	if (![self validateAdditionalRepositories:1])
-	{
-		return;
-	}
-	
 	// get the current selection context before showing any windows
 	NSUInteger insertionIndex = 0;
 	GBRepositoriesGroup* aGroup = [self contextGroupAndIndex:&insertionIndex];
@@ -273,12 +258,7 @@
 - (BOOL) openURLs:(NSArray*)URLs inGroup:(GBRepositoriesGroup*)aGroup atIndex:(NSUInteger)insertionIndex
 {
 	if (!URLs) return NO;
-	
-	if (![self validateAdditionalRepositories:[URLs count]])
-	{
-		return NO;
-	}
-	
+
 	if (!aGroup) aGroup = self;
 	if (insertionIndex == NSNotFound) insertionIndex = 0;
 	
@@ -511,37 +491,6 @@
 
 
 
-
-
-- (BOOL) validateAdditionalRepositories:(NSUInteger)additionalRepos
-{
-#if !GITBOX_APP_STORE
-	__block NSUInteger repos = 0;
-	[self.sidebarItem enumerateChildrenUsingBlock:^(GBSidebarItem *item, NSUInteger idx, BOOL *stop) {
-		if ([item.object isKindOfClass:[GBRepositoryController class]] ||
-			[item.object isKindOfClass:[GBRepositoryCloningController class]])
-		{
-			repos++;
-		}
-	}];
-	
-	if ((additionalRepos + repos) > 1)
-	{
-		NSString* license = [[NSUserDefaults standardUserDefaults] objectForKey:@"license"];
-		if (!OAValidateLicenseNumber(license))
-		{
-			[NSApp sendAction:@selector(showLicense:) to:nil from:self];
-			
-			NSString* license = [[NSUserDefaults standardUserDefaults] objectForKey:@"license"];
-			if (!OAValidateLicenseNumber(license))
-			{
-				return NO;
-			}
-		}
-	}
-#endif
-	return YES;
-}
 
 
 @end

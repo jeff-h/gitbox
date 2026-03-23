@@ -68,8 +68,6 @@
 	<string>http://itunes.apple.com/app/gitbox/id403388357</string>
 	<key>GBHelpURL</key>
 	<string>http://gitboxapp.com/help.html</string>
-	<key>GBPurchaseURL</key>
-	<string>http://gitboxapp.com/buy_license.html</string>
 	<key>GBReleaseNotesURL</key>
 	<string>http://gitboxapp.com/release-notes.html</string>
 	<key>GBSiteURL</key>
@@ -87,8 +85,10 @@
 	<key>SUEnableAutomaticChecks</key>
 	<true/>
 	<key>SUFeedURL</key>
-	<string>${SPARKLE_FEED_URL}</string>
+	<string>https://github.com/jeff-h/gitbox/releases/latest/download/appcast.xml</string>
 	<key>SUPublicDSAKeyFile</key>
 	<string>sparkle_dsa_pub.pem</string>
+	<key>SUPublicEDKey</key>
+	<string>s+AlkZGpuOtiXGZSBsdevLvA951ZksqsSI1rGHrrPB8=</string>
 </dict>
 </plist>

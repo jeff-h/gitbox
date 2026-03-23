@@ -1,7 +1,6 @@
 #import "GBSubmodule.h"
 #import "GBRepository.h"
 #import "GBSidebarItem.h"
-#import "GBSubmoduleCell.h"
 #import "GBSubmoduleCloningViewController.h"
 #import "GBSubmoduleCloningController.h"
 #import "GBAuthenticatedTask.h"
@@ -52,8 +51,7 @@
 		self.sidebarItem.draggable = NO;
 		self.sidebarItem.selectable = YES;
 		self.sidebarItem.editable = NO;
-		self.sidebarItem.cell = [[GBSubmoduleCell alloc] initWithItem:self.sidebarItem];
-		
+
 		self.viewController = [[GBSubmoduleCloningViewController alloc] initWithNibName:@"GBSubmoduleCloningViewController" bundle:nil];
 		self.viewController.repositoryController = self;
 	}
@@ -152,7 +150,6 @@
 			[self notifyWithSelector:@selector(submoduleCloningControllerDidFinish:)];
 		}
 		
-		[self.sidebarItem removeAllViews];
 		[self.sidebarItem update];
 	}];
 }
@@ -168,7 +165,6 @@
 		[t terminate];
 		self.progressStatus = @"";
 		self.sidebarItemProgress = 0.0;
-		[self.sidebarItem removeAllViews];
 		[self.sidebarItem update];
 	}
 	[self notifyWithSelector:@selector(submoduleCloningControllerDidCancel:)];
@@ -184,7 +180,6 @@
 	OATask* t = self.task;
 	self.task = nil;
 	[t terminate];
-	[self.sidebarItem removeAllViews];
 	[self.sidebarItem update];
 }
 
@@ -254,6 +249,17 @@
 
 - (void) sidebarItemLoadContentsFromPropertyList:(id)plist
 {
+}
+
+- (NSString*) sidebarItemActionButtonTitle
+{
+	if (self.sidebarItem.visibleSpinning) return nil;
+	return NSLocalizedString(@"Download", @"GBSubmodule");
+}
+
+- (SEL) sidebarItemActionButtonAction
+{
+	return @selector(startDownload:);
 }
 
 

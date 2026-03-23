@@ -2,8 +2,8 @@
 #import "GBRootController.h"
 #import "GBRepository.h"
 #import "GBSidebarItem.h"
-#import "GBSidebarCell.h"
-#import "OALicenseNumberCheck.h"
+#import "GBSidebarOutlineView.h"
+#import "gitbox-Swift.h"
 
 #import "OAFastJumpController.h"
 #import "NSFileManager+OAFileManagerHelpers.h"
@@ -22,7 +22,6 @@
 - (void) updateContents;
 - (void) updateSelection;
 - (void) updateExpandedState;
-- (void) updateBuyButton;
 - (NSMenu*) defaultMenu;
 @end
 
@@ -32,7 +31,6 @@
 @synthesize rootController;
 @synthesize outlineView;
 @synthesize ignoreSelectionChange;
-@synthesize buyButton;
 @synthesize jumpController;
 
 - (void) dealloc
@@ -44,15 +42,24 @@
 - (void) loadView
 {
 	[super loadView];
+
+	// Sidebar background — Gitbox v1 nostalgic grey (#D6DCE4)
+	NSScrollView *scrollView = [self.outlineView enclosingScrollView];
+	if (scrollView)
+	{
+		NSColor *sidebarBg = [NSColor colorWithSRGBRed:0xEB/255.0 green:0xEE/255.0 blue:0xF2/255.0 alpha:1.0];
+		scrollView.backgroundColor = sidebarBg;
+		self.outlineView.backgroundColor = sidebarBg;
+	}
+
 	if (!self.jumpController) self.jumpController = [OAFastJumpController controller];
 	[self.outlineView registerForDraggedTypes:[NSArray arrayWithObjects:GBSidebarItemPasteboardType, NSFilenamesPboardType, nil]];
 	[self.outlineView setDraggingSourceOperationMask:NSDragOperationEvery forLocal:YES];
 	[self.outlineView setDraggingSourceOperationMask:NSDragOperationEvery forLocal:NO];
 	[self.outlineView setMenu:[self defaultMenu]];
 	[self.outlineView setAutoresizesOutlineColumn:NO];
-	[self updateBuyButton];
+	[self.outlineView setFloatsGroupRows:NO];
 	[self updateContents];
-	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(licenseDidUpdate:) name:OALicenseDidUpdateNotification object:nil];
 }
 
 - (void) setRootController:(GBRootController *)aRootController
@@ -64,12 +71,6 @@
 	[rootController addObserverForAllSelectors:self];
 	
 	[self updateContents];
-}
-
-
-- (void) licenseDidUpdate:(NSNotification*)notif
-{
-	[self updateBuyButton];
 }
 
 
@@ -284,12 +285,6 @@
 	return [item childAtIndex:index];
 }
 
-- (id)outlineView:(NSOutlineView*)anOutlineView objectValueForTableColumn:(NSTableColumn*)tableColumn byItem:(GBSidebarItem*)item
-{
-	item.sidebarController = self;
-	return item.title;
-}
-
 - (BOOL)outlineView:(NSOutlineView*)anOutlineView isItemExpandable:(GBSidebarItem*)item
 {
 	if (item == nil) return NO;
@@ -298,18 +293,11 @@
 
 
 
-// Editing
+// Editing — view-based outline uses the text field directly
 
 - (BOOL)outlineView:(NSOutlineView*)anOutlineView shouldEditTableColumn:(NSTableColumn*)tableColumn item:(GBSidebarItem*)item
 {
 	return [item isEditable];
-}
-
-- (void)outlineView:(NSOutlineView *)anOutlineView setObjectValue:(id)object forTableColumn:(NSTableColumn *)tableColumn byItem:(GBSidebarItem*)item
-{
-	if ([object respondsToSelector:@selector(string)]) object = [object string];
-	object = [NSString stringWithFormat:@"%@", object];
-	[item setStringValue:object];
 }
 
 - (BOOL)control:(NSControl *)control textShouldBeginEditing:(NSText *)fieldEditor
@@ -344,6 +332,20 @@
 	return [item isSection];
 }
 
+- (BOOL) outlineView:(NSOutlineView*)anOutlineView shouldCollapseItem:(GBSidebarItem*)item
+{
+	// Prevent collapsing section headers (e.g. REPOSITORIES)
+	if ([item isSection]) return NO;
+	return YES;
+}
+
+- (BOOL) outlineView:(NSOutlineView*)anOutlineView shouldShowOutlineCellForItem:(GBSidebarItem*)item
+{
+	// Hide the disclosure triangle on section headers
+	if ([item isSection]) return NO;
+	return YES;
+}
+
 - (BOOL) outlineView:(NSOutlineView*)anOutlineView shouldSelectItem:(GBSidebarItem*)item
 {
 	if (item == nil) return NO; // do not select invisible root 
@@ -364,59 +366,37 @@
 	//}];
 }
 
-- (NSCell *)outlineView:(NSOutlineView *)outlineView dataCellForTableColumn:(NSTableColumn *)tableColumn item:(GBSidebarItem*)item
+- (NSView *)outlineView:(NSOutlineView *)anOutlineView viewForTableColumn:(NSTableColumn *)tableColumn item:(GBSidebarItem*)item
 {
-	// tableColumn == nil means the outlineView needs a separator cell
-	if (!tableColumn) return nil;
-	
 	if (!item) item = self.rootController.sidebarItem;
-	
-	NSCell* cell = item.cell;
-	
-	if (!cell)
-	{
-		cell = [tableColumn dataCell];
-	}
-	
-	//  [cell setMenu:item.menu];
-	return cell;
-}
+	item.sidebarController = self;
 
-- (void)outlineView:(NSOutlineView*)anOutlineView willDisplayCell:(NSCell*)cell forTableColumn:(NSTableColumn*)tableColumn item:(GBSidebarItem*)item
-{
+	GBSidebarCellView *cellView = [anOutlineView makeViewWithIdentifier:[GBSidebarCellView cellIdentifier] owner:self];
+	if (!cellView)
+	{
+		cellView = [[GBSidebarCellView alloc] initWithFrame:NSMakeRect(0, 0, 200, [GBSidebarCellView rowHeight])];
+		cellView.identifier = [GBSidebarCellView cellIdentifier];
+	}
+
+	// Set drag state so badges hide during drag image generation
+	cellView.isDragging = [(GBSidebarOutlineView *)anOutlineView preparesImageForDragging];
+
+	[cellView configureWith:item];
+
+	// Context menu
 	NSMenu* menu = item.menu;
 	if (menu)
 	{
 		menu.delegate = self;
-		[cell setMenu:menu];
+		cellView.menu = menu;
 	}
+
+	return cellView;
 }
 
-- (CGFloat)outlineView:(NSOutlineView*)outlineView heightOfRowByItem:(GBSidebarItem*)item
+- (CGFloat)outlineView:(NSOutlineView*)anOutlineView heightOfRowByItem:(GBSidebarItem*)item
 {
-	if (!item) item = self.rootController.sidebarItem;
-	NSCell* cell = item.cell;
-	
-	if (cell && [cell respondsToSelector:@selector(cellHeight)])
-	{
-		return [(id)cell cellHeight];
-	}
-	
-	return 21.0;
-}
-
-- (NSString *)outlineView:(NSOutlineView *)outlineView
-           toolTipForCell:(NSCell *)cell
-                     rect:(NSRectPointer)rect
-              tableColumn:(NSTableColumn *)tc
-                     item:(GBSidebarItem*)item
-            mouseLocation:(NSPoint)mouseLocation
-{
-	if (!item) item = self.rootController.sidebarItem;
-	
-	NSString* tooltip = item.tooltip;
-	if (!tooltip) return @"";  
-	return tooltip;
+	return [GBSidebarCellView rowHeight];
 }
 
 
@@ -617,7 +597,6 @@
 
 - (void) updateContents
 {
-	[self updateBuyButton];
 	self.ignoreSelectionChange++;
 	[self.outlineView reloadData];
 	[self updateExpandedState];
@@ -666,19 +645,6 @@
 		}
 	}];
 }
-
-- (void) updateBuyButton
-{
-#if GITBOX_APP_STORE
-#else
-	
-	NSString* license = [[NSUserDefaults standardUserDefaults] objectForKey:@"license"];
-	[self.buyButton setHidden:OAValidateLicenseNumber(license)];
-	
-#endif
-}
-
-
 
 
 

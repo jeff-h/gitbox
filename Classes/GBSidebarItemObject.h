@@ -29,4 +29,8 @@
 - (BOOL) sidebarItemOpenURLs:(NSArray*)URLs atIndex:(NSUInteger)anIndex;
 - (BOOL) sidebarItemMoveObjects:(NSArray*)items toIndex:(NSUInteger)anIndex;
 
+// Action button (e.g. "Download" / "Reset" for submodules)
+- (NSString*) sidebarItemActionButtonTitle;
+- (SEL) sidebarItemActionButtonAction;
+
 @end

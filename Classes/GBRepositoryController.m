@@ -19,7 +19,6 @@
 
 #import "GBOptimizeRepositoryController.h"
 
-#import "GBSidebarCell.h"
 #import "GBSidebarItem.h"
 
 #import "GBPromptController.h"
@@ -239,7 +238,6 @@
 		self.sidebarItem.selectable = YES;
 		self.sidebarItem.editable = YES;
 		self.sidebarItem.draggable = YES;
-		self.sidebarItem.cell = [[GBSidebarCell alloc] initWithItem:self.sidebarItem];
 		self.selectedCommit = self.repository.stage;
 		self.folderMonitor = [[GBFolderMonitor alloc] init];
 		self.folderMonitor.path = [[aURL path] stringByStandardizingPath];

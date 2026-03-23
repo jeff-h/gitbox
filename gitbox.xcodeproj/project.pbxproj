@@ -58,8 +58,6 @@
 		200A41B212EB91B0004DF940 /* OABlockMerger.m in Sources */ = {isa = PBXBuildFile; fileRef = 200A41B012EB91B0004DF940 /* OABlockMerger.m */; };
 		200A41C912EB9B14004DF940 /* GBGitConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 200A41C812EB9B14004DF940 /* GBGitConfig.m */; };
 		200A41CA12EB9B14004DF940 /* GBGitConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 200A41C812EB9B14004DF940 /* GBGitConfig.m */; };
-		200A43E912EC2507004DF940 /* GBSubmoduleCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 200A43E812EC2507004DF940 /* GBSubmoduleCell.m */; };
-		200A43EA12EC2507004DF940 /* GBSubmoduleCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 200A43E812EC2507004DF940 /* GBSubmoduleCell.m */; };
 		200A444B12EC2DCE004DF940 /* GBSubmoduleCloningController.m in Sources */ = {isa = PBXBuildFile; fileRef = 200A444A12EC2DCE004DF940 /* GBSubmoduleCloningController.m */; };
 		200A444C12EC2DCE004DF940 /* GBSubmoduleCloningController.m in Sources */ = {isa = PBXBuildFile; fileRef = 200A444A12EC2DCE004DF940 /* GBSubmoduleCloningController.m */; };
 		200A472012ECB265004DF940 /* GBSidebarRepositoryIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = 200A471E12ECB265004DF940 /* GBSidebarRepositoryIcon.png */; };
@@ -71,8 +69,6 @@
 		200A484112F0034A004DF940 /* GBSidebarSubmoduleMissingIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = 200A484012F0034A004DF940 /* GBSidebarSubmoduleMissingIcon.png */; };
 		200A484212F0034A004DF940 /* GBSidebarSubmoduleMissingIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = 200A484012F0034A004DF940 /* GBSidebarSubmoduleMissingIcon.png */; };
 		200B08B511B6E359004C09A8 /* GBLocalRemoteAssociationTask.m in Sources */ = {isa = PBXBuildFile; fileRef = 200B08B411B6E359004C09A8 /* GBLocalRemoteAssociationTask.m */; };
-		200C159914670F9E000F4C78 /* GitboxLicense.txt in Resources */ = {isa = PBXBuildFile; fileRef = 201419F2142C8D0300AA55E8 /* GitboxLicense.txt */; };
-		200C159A14670F9E000F4C78 /* GitboxLicense.txt in Resources */ = {isa = PBXBuildFile; fileRef = 201419F2142C8D0300AA55E8 /* GitboxLicense.txt */; };
 		200C159E14672EB2000F4C78 /* GBSubmoduleCloningViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 200C159C14672EB1000F4C78 /* GBSubmoduleCloningViewController.m */; };
 		200C159F14672EB2000F4C78 /* GBSubmoduleCloningViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 200C159C14672EB1000F4C78 /* GBSubmoduleCloningViewController.m */; };
 		200C15A014672EB2000F4C78 /* GBSubmoduleCloningViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 200C159D14672EB1000F4C78 /* GBSubmoduleCloningViewController.xib */; };
@@ -384,8 +380,6 @@
 		2097EB3012DDF4680070AE89 /* GBSidebarOutlineView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2097EB2E12DDF4680070AE89 /* GBSidebarOutlineView.m */; };
 		2097EB5B12DDF7D30070AE89 /* GBChangesTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2097EB5A12DDF7D30070AE89 /* GBChangesTableView.m */; };
 		2097EB5C12DDF7D30070AE89 /* GBChangesTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2097EB5A12DDF7D30070AE89 /* GBChangesTableView.m */; };
-		2097EC6C12DE6B450070AE89 /* GBSidebarCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2097EC6B12DE6B450070AE89 /* GBSidebarCell.m */; };
-		2097EC6D12DE6B450070AE89 /* GBSidebarCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2097EC6B12DE6B450070AE89 /* GBSidebarCell.m */; };
 		2097EE2412DF2B4A0070AE89 /* GBSidebarGroupIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = 2097EE2312DF2B4A0070AE89 /* GBSidebarGroupIcon.png */; };
 		2097EE2512DF2B4A0070AE89 /* GBSidebarGroupIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = 2097EE2312DF2B4A0070AE89 /* GBSidebarGroupIcon.png */; };
 		209A935A11BA92B6006B0B5C /* GBFileEditingController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 209A935911BA92B6006B0B5C /* GBFileEditingController.xib */; };
@@ -411,10 +405,6 @@
 		20A5E38014D68BE200408DD7 /* GBPreferencesIgnoreViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 20A5E37314D68BD600408DD7 /* GBPreferencesIgnoreViewController.m */; };
 		20A5E38114D68BE200408DD7 /* GBPreferencesIgnoreViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 20A5E37414D68BD700408DD7 /* GBPreferencesIgnoreViewController.xib */; };
 		20A5E38214D68BE200408DD7 /* GBPreferencesIgnoreViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 20A5E37414D68BD700408DD7 /* GBPreferencesIgnoreViewController.xib */; };
-		20A5E38314D68BE200408DD7 /* GBPreferencesLicenseViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 20A5E37614D68BD900408DD7 /* GBPreferencesLicenseViewController.m */; };
-		20A5E38414D68BE200408DD7 /* GBPreferencesLicenseViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 20A5E37614D68BD900408DD7 /* GBPreferencesLicenseViewController.m */; };
-		20A5E38514D68BE200408DD7 /* GBPreferencesLicenseViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 20A5E37714D68BDA00408DD7 /* GBPreferencesLicenseViewController.xib */; };
-		20A5E38614D68BE200408DD7 /* GBPreferencesLicenseViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 20A5E37714D68BDA00408DD7 /* GBPreferencesLicenseViewController.xib */; };
 		20A5E38714D68BE200408DD7 /* GBPreferencesUpdatesViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 20A5E37914D68BDE00408DD7 /* GBPreferencesUpdatesViewController.m */; };
 		20A5E38914D68BE200408DD7 /* GBPreferencesUpdatesViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 20A5E37A14D68BDF00408DD7 /* GBPreferencesUpdatesViewController.xib */; };
 		20A5E38A14D68BE200408DD7 /* GBPreferencesUpdatesViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 20A5E37A14D68BDF00408DD7 /* GBPreferencesUpdatesViewController.xib */; };
@@ -483,8 +473,6 @@
 		20C50D3714D5F98E009786D9 /* GBPreferencesIgnore.png in Resources */ = {isa = PBXBuildFile; fileRef = 20C50D2E14D5F98E009786D9 /* GBPreferencesIgnore.png */; };
 		20C50D3814D5F98E009786D9 /* GBPreferencesUpdates.png in Resources */ = {isa = PBXBuildFile; fileRef = 20C50D2F14D5F98E009786D9 /* GBPreferencesUpdates.png */; };
 		20C50D3914D5F98E009786D9 /* GBPreferencesUpdates.png in Resources */ = {isa = PBXBuildFile; fileRef = 20C50D2F14D5F98E009786D9 /* GBPreferencesUpdates.png */; };
-		20C50D3B14D60441009786D9 /* GBPreferencesLicense.png in Resources */ = {isa = PBXBuildFile; fileRef = 20C50D3A14D60441009786D9 /* GBPreferencesLicense.png */; };
-		20C50D3C14D60441009786D9 /* GBPreferencesLicense.png in Resources */ = {isa = PBXBuildFile; fileRef = 20C50D3A14D60441009786D9 /* GBPreferencesLicense.png */; };
 		20C50D4014D6057E009786D9 /* GBPreferencesGithubViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 20C50D3E14D6057E009786D9 /* GBPreferencesGithubViewController.m */; };
 		20C50D4114D6057E009786D9 /* GBPreferencesGithubViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 20C50D3E14D6057E009786D9 /* GBPreferencesGithubViewController.m */; };
 		20C50D4214D6057E009786D9 /* GBPreferencesGithubViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 20C50D3F14D6057E009786D9 /* GBPreferencesGithubViewController.xib */; };
@@ -499,10 +487,6 @@
 		20C8972312B89BC2002F600F /* OATextFieldAndView.m in Sources */ = {isa = PBXBuildFile; fileRef = 20C8972112B89BC2002F600F /* OATextFieldAndView.m */; };
 		20C899B612B95DDF002F600F /* OANonScrollingScrollView.m in Sources */ = {isa = PBXBuildFile; fileRef = 20C899B512B95DDF002F600F /* OANonScrollingScrollView.m */; };
 		20C899B712B95DDF002F600F /* OANonScrollingScrollView.m in Sources */ = {isa = PBXBuildFile; fileRef = 20C899B512B95DDF002F600F /* OANonScrollingScrollView.m */; };
-		20C936071609242600B8E985 /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 20C935FE160923CF00B8E985 /* libcrypto.a */; };
-		20C936081609242600B8E985 /* libssl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 20C935FF160923CF00B8E985 /* libssl.a */; };
-		20C936091609242600B8E985 /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 20C935FE160923CF00B8E985 /* libcrypto.a */; };
-		20C9360A1609242600B8E985 /* libssl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 20C935FF160923CF00B8E985 /* libssl.a */; };
 		20CBF1CE13D61EB80071E79D /* libgit2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 20CBF1CD13D61EB80071E79D /* libgit2.a */; };
 		20CE6D65138824D2001D9707 /* GBHistoryTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 20CE6D64138824D2001D9707 /* GBHistoryTableView.m */; };
 		20CE6D66138824D2001D9707 /* GBHistoryTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 20CE6D64138824D2001D9707 /* GBHistoryTableView.m */; };
@@ -531,10 +515,14 @@
 		20EF8C4812E6605D00F3438A /* Quartz.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20EF88D612E34F9300F3438A /* Quartz.framework */; };
 		20F2D1C114E469E3009F3609 /* GBApplication.m in Sources */ = {isa = PBXBuildFile; fileRef = 20F2D1C014E469E3009F3609 /* GBApplication.m */; };
 		20F2D1C214E469E3009F3609 /* GBApplication.m in Sources */ = {isa = PBXBuildFile; fileRef = 20F2D1C014E469E3009F3609 /* GBApplication.m */; };
-		20F2FF25181DC80600701116 /* git.bundle-1.8.4.1.3.g7ce914e.tar in Resources */ = {isa = PBXBuildFile; fileRef = 20F2FF24181DC80600701116 /* git.bundle-1.8.4.1.3.g7ce914e.tar */; };
-		20F2FF26181DC80600701116 /* git.bundle-1.8.4.1.3.g7ce914e.tar in Resources */ = {isa = PBXBuildFile; fileRef = 20F2FF24181DC80600701116 /* git.bundle-1.8.4.1.3.g7ce914e.tar */; };
+		20F2FF25181DC80600701116 /* git.bundle-2.50.1.tar in Resources */ = {isa = PBXBuildFile; fileRef = 20F2FF24181DC80600701116 /* git.bundle-2.50.1.tar */; };
+		20F2FF26181DC80600701116 /* git.bundle-2.50.1.tar in Resources */ = {isa = PBXBuildFile; fileRef = 20F2FF24181DC80600701116 /* git.bundle-2.50.1.tar */; };
 		20FE4AA01469961800817E2C /* GBSubmoduleController.m in Sources */ = {isa = PBXBuildFile; fileRef = 20FE4A9F1469961800817E2C /* GBSubmoduleController.m */; };
 		20FE4AA11469961800817E2C /* GBSubmoduleController.m in Sources */ = {isa = PBXBuildFile; fileRef = 20FE4A9F1469961800817E2C /* GBSubmoduleController.m */; };
+		6FAD35332F7154D300C09C6B /* GBSidebarCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FAD35322F7154D300C09C6B /* GBSidebarCellView.swift */; };
+		6FAD35342F7154D300C09C6B /* GBSidebarCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FAD35322F7154D300C09C6B /* GBSidebarCellView.swift */; };
+		6FAD35382F71550E00C09C6B /* GBBadgeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FAD35372F71550E00C09C6B /* GBBadgeView.swift */; };
+		6FAD35392F71550E00C09C6B /* GBBadgeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FAD35372F71550E00C09C6B /* GBBadgeView.swift */; };
 		70865D2B12D25F5F00033683 /* GBSubmodule.m in Sources */ = {isa = PBXBuildFile; fileRef = 70865D2A12D25F5F00033683 /* GBSubmodule.m */; };
 		70EEC8D012DFE33E00DD1555 /* GBSubmodulesTask.m in Sources */ = {isa = PBXBuildFile; fileRef = 70EEC8CF12DFE33E00DD1555 /* GBSubmodulesTask.m */; };
 		8D15AC320486D014006FF6A4 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A37F4B0FDCFA73011CA2CEA /* main.m */; settings = {ATTRIBUTES = (); }; };
@@ -604,8 +592,6 @@
 		200A41B012EB91B0004DF940 /* OABlockMerger.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OABlockMerger.m; sourceTree = "<group>"; };
 		200A41C712EB9B14004DF940 /* GBGitConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GBGitConfig.h; sourceTree = "<group>"; };
 		200A41C812EB9B14004DF940 /* GBGitConfig.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GBGitConfig.m; sourceTree = "<group>"; };
-		200A43E712EC2507004DF940 /* GBSubmoduleCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GBSubmoduleCell.h; sourceTree = "<group>"; };
-		200A43E812EC2507004DF940 /* GBSubmoduleCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GBSubmoduleCell.m; sourceTree = "<group>"; };
 		200A444912EC2DCE004DF940 /* GBSubmoduleCloningController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GBSubmoduleCloningController.h; sourceTree = "<group>"; };
 		200A444A12EC2DCE004DF940 /* GBSubmoduleCloningController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GBSubmoduleCloningController.m; sourceTree = "<group>"; };
 		200A471E12ECB265004DF940 /* GBSidebarRepositoryIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = GBSidebarRepositoryIcon.png; path = Images/GBSidebarRepositoryIcon.png; sourceTree = SOURCE_ROOT; };
@@ -648,7 +634,6 @@
 		2010732E11A7E9C300EFDE56 /* app.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = app.icns; sourceTree = "<group>"; };
 		201073B411A80A4600EFDE56 /* GBRemotesTask.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GBRemotesTask.h; sourceTree = "<group>"; };
 		201073B511A80A4600EFDE56 /* GBRemotesTask.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GBRemotesTask.m; sourceTree = "<group>"; };
-		201419F2142C8D0300AA55E8 /* GitboxLicense.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = GitboxLicense.txt; sourceTree = SOURCE_ROOT; };
 		201419F6142CA60C00AA55E8 /* GitConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GitConfig.h; sourceTree = "<group>"; };
 		201419F7142CA60C00AA55E8 /* GitConfig.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GitConfig.m; sourceTree = "<group>"; };
 		201419FA142CA7CA00AA55E8 /* git2 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = git2; path = libgit2/include/git2; sourceTree = SOURCE_ROOT; };
@@ -687,9 +672,7 @@
 		20265C1311D68F1300709F6B /* OAFile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAFile.m; sourceTree = "<group>"; };
 		20265E4A11E3EB9B00709F6B /* GBWelcomeController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = GBWelcomeController.xib; sourceTree = "<group>"; };
 		202F565D145D96EA006927F6 /* Gitbox.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = Gitbox.entitlements; sourceTree = "<group>"; };
-		2030C445128B5B6E005F751C /* OAAppStoreReceipt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAAppStoreReceipt.h; sourceTree = "<group>"; };
 		2030C44E128B5BA1005F751C /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
-		2030C65B128C98C9005F751C /* OAObfuscatedLicenseCheck.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAObfuscatedLicenseCheck.h; sourceTree = "<group>"; };
 		2030C6EF128E5555005F751C /* GBErrors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GBErrors.h; sourceTree = "<group>"; };
 		2030C6F0128E55A0005F751C /* GBErrors.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GBErrors.m; sourceTree = "<group>"; };
 		2031BB2D12A83B1D008CC337 /* NSObject+OAPerformBlockAfterDelay.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSObject+OAPerformBlockAfterDelay.h"; sourceTree = "<group>"; };
@@ -832,7 +815,6 @@
 		20820CD4134E331F00AD55AF /* response.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = response.txt; sourceTree = "<group>"; };
 		2082B7C2126587CA00667A7F /* GBRepositoryCloningController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GBRepositoryCloningController.h; sourceTree = "<group>"; };
 		2082B7C3126587CA00667A7F /* GBRepositoryCloningController.m */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 4; lastKnownFileType = sourcecode.c.objc; path = GBRepositoryCloningController.m; sourceTree = "<group>"; tabWidth = 4; usesTabs = 1; };
-		2084C75D1297425F009295C8 /* OALicenseNumberCheck.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OALicenseNumberCheck.h; sourceTree = "<group>"; };
 		2084C8671299A078009295C8 /* calc_hard_links.rb */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.ruby; path = calc_hard_links.rb; sourceTree = "<group>"; };
 		2084C8681299A078009295C8 /* git-remove-hardlinks.rb */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.ruby; path = "git-remove-hardlinks.rb"; sourceTree = "<group>"; };
 		2086DF50133BC20F00289144 /* OAMultipleSelection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAMultipleSelection.h; sourceTree = "<group>"; };
@@ -882,8 +864,6 @@
 		2097EB2E12DDF4680070AE89 /* GBSidebarOutlineView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GBSidebarOutlineView.m; sourceTree = "<group>"; };
 		2097EB5912DDF7D30070AE89 /* GBChangesTableView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GBChangesTableView.h; sourceTree = "<group>"; };
 		2097EB5A12DDF7D30070AE89 /* GBChangesTableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GBChangesTableView.m; sourceTree = "<group>"; };
-		2097EC6A12DE6B450070AE89 /* GBSidebarCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GBSidebarCell.h; sourceTree = "<group>"; };
-		2097EC6B12DE6B450070AE89 /* GBSidebarCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GBSidebarCell.m; sourceTree = "<group>"; };
 		2097EE2312DF2B4A0070AE89 /* GBSidebarGroupIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = GBSidebarGroupIcon.png; path = Images/GBSidebarGroupIcon.png; sourceTree = SOURCE_ROOT; };
 		209A935911BA92B6006B0B5C /* GBFileEditingController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = GBFileEditingController.xib; sourceTree = "<group>"; };
 		209A935D11BA934C006B0B5C /* GBFileEditingController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GBFileEditingController.h; sourceTree = "<group>"; };
@@ -909,9 +889,6 @@
 		20A5E37214D68BD600408DD7 /* GBPreferencesIgnoreViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GBPreferencesIgnoreViewController.h; sourceTree = "<group>"; };
 		20A5E37314D68BD600408DD7 /* GBPreferencesIgnoreViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GBPreferencesIgnoreViewController.m; sourceTree = "<group>"; };
 		20A5E37414D68BD700408DD7 /* GBPreferencesIgnoreViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = GBPreferencesIgnoreViewController.xib; sourceTree = "<group>"; };
-		20A5E37514D68BD800408DD7 /* GBPreferencesLicenseViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GBPreferencesLicenseViewController.h; sourceTree = "<group>"; };
-		20A5E37614D68BD900408DD7 /* GBPreferencesLicenseViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GBPreferencesLicenseViewController.m; sourceTree = "<group>"; };
-		20A5E37714D68BDA00408DD7 /* GBPreferencesLicenseViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = GBPreferencesLicenseViewController.xib; sourceTree = "<group>"; };
 		20A5E37814D68BDC00408DD7 /* GBPreferencesUpdatesViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GBPreferencesUpdatesViewController.h; sourceTree = "<group>"; };
 		20A5E37914D68BDE00408DD7 /* GBPreferencesUpdatesViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GBPreferencesUpdatesViewController.m; sourceTree = "<group>"; };
 		20A5E37A14D68BDF00408DD7 /* GBPreferencesUpdatesViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = GBPreferencesUpdatesViewController.xib; sourceTree = "<group>"; };
@@ -987,7 +964,6 @@
 		20C50D2D14D5F98E009786D9 /* GBPreferencesGithub.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = GBPreferencesGithub.png; path = Images/GBPreferencesGithub.png; sourceTree = SOURCE_ROOT; };
 		20C50D2E14D5F98E009786D9 /* GBPreferencesIgnore.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = GBPreferencesIgnore.png; path = Images/GBPreferencesIgnore.png; sourceTree = SOURCE_ROOT; };
 		20C50D2F14D5F98E009786D9 /* GBPreferencesUpdates.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = GBPreferencesUpdates.png; path = Images/GBPreferencesUpdates.png; sourceTree = SOURCE_ROOT; };
-		20C50D3A14D60441009786D9 /* GBPreferencesLicense.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = GBPreferencesLicense.png; path = Images/GBPreferencesLicense.png; sourceTree = SOURCE_ROOT; };
 		20C50D3D14D6057E009786D9 /* GBPreferencesGithubViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GBPreferencesGithubViewController.h; sourceTree = "<group>"; };
 		20C50D3E14D6057E009786D9 /* GBPreferencesGithubViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GBPreferencesGithubViewController.m; sourceTree = "<group>"; };
 		20C50D3F14D6057E009786D9 /* GBPreferencesGithubViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = GBPreferencesGithubViewController.xib; sourceTree = "<group>"; };
@@ -1028,13 +1004,17 @@
 		20EF88D812E34F9300F3438A /* QuickLook.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuickLook.framework; path = System/Library/Frameworks/QuickLook.framework; sourceTree = SDKROOT; };
 		20F2D1BF14E469E3009F3609 /* GBApplication.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GBApplication.h; sourceTree = "<group>"; };
 		20F2D1C014E469E3009F3609 /* GBApplication.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GBApplication.m; sourceTree = "<group>"; };
-		20F2FF24181DC80600701116 /* git.bundle-1.8.4.1.3.g7ce914e.tar */ = {isa = PBXFileReference; lastKnownFileType = archive.tar; path = "git.bundle-1.8.4.1.3.g7ce914e.tar"; sourceTree = "<group>"; };
+		20F2FF24181DC80600701116 /* git.bundle-2.50.1.tar */ = {isa = PBXFileReference; lastKnownFileType = archive.tar; path = "git.bundle-2.50.1.tar"; sourceTree = "<group>"; };
 		20FE4A9E1469961800817E2C /* GBSubmoduleController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GBSubmoduleController.h; sourceTree = "<group>"; };
 		20FE4A9F1469961800817E2C /* GBSubmoduleController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GBSubmoduleController.m; sourceTree = "<group>"; };
 		2564AD2C0F5327BB00F57823 /* prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = prefix.pch; sourceTree = "<group>"; };
 		2A37F4B0FDCFA73011CA2CEA /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		2A37F4C4FDCFA73011CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		2A37F4C5FDCFA73011CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		6FAD35322F7154D300C09C6B /* GBSidebarCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GBSidebarCellView.swift; sourceTree = "<group>"; };
+		6FAD35352F71550000C09C6B /* Gitbox AppStore-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Gitbox AppStore-Bridging-Header.h"; sourceTree = "<group>"; };
+		6FAD35362F71550000C09C6B /* Gitbox-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Gitbox-Bridging-Header.h"; sourceTree = "<group>"; };
+		6FAD35372F71550E00C09C6B /* GBBadgeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GBBadgeView.swift; sourceTree = "<group>"; };
 		70865D2912D25F5F00033683 /* GBSubmodule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GBSubmodule.h; sourceTree = "<group>"; };
 		70865D2A12D25F5F00033683 /* GBSubmodule.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GBSubmodule.m; sourceTree = "<group>"; };
 		70EEC8CE12DFE33E00DD1555 /* GBSubmodulesTask.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GBSubmodulesTask.h; sourceTree = "<group>"; };
@@ -1056,8 +1036,6 @@
 				20EF8C4812E6605D00F3438A /* Quartz.framework in Frameworks */,
 				209CE44513D61FD0009E85A2 /* libz.dylib in Frameworks */,
 				209CE4C513D61FF2009E85A2 /* libgit2.a in Frameworks */,
-				20C936071609242600B8E985 /* libcrypto.a in Frameworks */,
-				20C936081609242600B8E985 /* libssl.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1075,8 +1053,6 @@
 				20EF88D912E34F9300F3438A /* QuickLook.framework in Frameworks */,
 				20CBF1CE13D61EB80071E79D /* libgit2.a in Frameworks */,
 				209CE44413D61FAC009E85A2 /* libz.dylib in Frameworks */,
-				20C936091609242600B8E985 /* libcrypto.a in Frameworks */,
-				20C9360A1609242600B8E985 /* libssl.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1167,10 +1143,6 @@
 				201E030411EE09D7007E4420 /* GBCertificateUpdateController.h */,
 				201E030511EE09D7007E4420 /* GBCertificateUpdateController.m */,
 				201E030111EE083D007E4420 /* GBCertificateUpdateController.xib */,
-				2030C445128B5B6E005F751C /* OAAppStoreReceipt.h */,
-				2084C75D1297425F009295C8 /* OALicenseNumberCheck.h */,
-				2030C65B128C98C9005F751C /* OAObfuscatedLicenseCheck.h */,
-				201419F2142C8D0300AA55E8 /* GitboxLicense.txt */,
 			);
 			name = License;
 			sourceTree = "<group>";
@@ -1446,6 +1418,8 @@
 		20A9713712C6C6CB00E2B7B9 /* Sidebar */ = {
 			isa = PBXGroup;
 			children = (
+				6FAD35322F7154D300C09C6B /* GBSidebarCellView.swift */,
+				6FAD35372F71550E00C09C6B /* GBBadgeView.swift */,
 				20A37BA4120DC1D90068AB8B /* GBSidebarController.h */,
 				20A37BA5120DC1D90068AB8B /* GBSidebarController.m */,
 				20A37BB5120DC7640068AB8B /* GBSidebarController.xib */,
@@ -1454,10 +1428,6 @@
 				20586A8812FDE54E00729DB1 /* GBSidebarItemObject.h */,
 				20586A8412FDE4C200729DB1 /* GBSidebarItem.h */,
 				20586A8512FDE4C400729DB1 /* GBSidebarItem.m */,
-				2097EC6A12DE6B450070AE89 /* GBSidebarCell.h */,
-				2097EC6B12DE6B450070AE89 /* GBSidebarCell.m */,
-				200A43E712EC2507004DF940 /* GBSubmoduleCell.h */,
-				200A43E812EC2507004DF940 /* GBSubmoduleCell.m */,
 				207C836914EAF36E005C91E7 /* GBSidebarCellSpinnerBackdrop.png */,
 				2097EE2312DF2B4A0070AE89 /* GBSidebarGroupIcon.png */,
 				200A471E12ECB265004DF940 /* GBSidebarRepositoryIcon.png */,
@@ -1465,6 +1435,8 @@
 				200A484012F0034A004DF940 /* GBSidebarSubmoduleMissingIcon.png */,
 				2086DF50133BC20F00289144 /* OAMultipleSelection.h */,
 				2086DF51133BC20F00289144 /* OAMultipleSelection.m */,
+				6FAD35352F71550000C09C6B /* Gitbox AppStore-Bridging-Header.h */,
+				6FAD35362F71550000C09C6B /* Gitbox-Bridging-Header.h */,
 			);
 			name = Sidebar;
 			sourceTree = "<group>";
@@ -1715,16 +1687,12 @@
 				20A5E37814D68BDC00408DD7 /* GBPreferencesUpdatesViewController.h */,
 				20A5E37914D68BDE00408DD7 /* GBPreferencesUpdatesViewController.m */,
 				20A5E37A14D68BDF00408DD7 /* GBPreferencesUpdatesViewController.xib */,
-				20A5E37514D68BD800408DD7 /* GBPreferencesLicenseViewController.h */,
-				20A5E37614D68BD900408DD7 /* GBPreferencesLicenseViewController.m */,
-				20A5E37714D68BDA00408DD7 /* GBPreferencesLicenseViewController.xib */,
 				20CFEFA214DD87130086330F /* GBPreferencesIntegration.png */,
 				20C50D2B14D5F98D009786D9 /* GBPreferencesConfig.png */,
 				20C50D2C14D5F98D009786D9 /* GBPreferencesDiff.png */,
 				20C50D2D14D5F98E009786D9 /* GBPreferencesGithub.png */,
 				20C50D2E14D5F98E009786D9 /* GBPreferencesIgnore.png */,
 				20C50D2F14D5F98E009786D9 /* GBPreferencesUpdates.png */,
-				20C50D3A14D60441009786D9 /* GBPreferencesLicense.png */,
 			);
 			name = Preferences;
 			sourceTree = "<group>";
@@ -1825,7 +1793,7 @@
 			isa = PBXGroup;
 			children = (
 				2016439012CC0F2E005C69DA /* author.png */,
-				20F2FF24181DC80600701116 /* git.bundle-1.8.4.1.3.g7ce914e.tar */,
+				20F2FF24181DC80600701116 /* git.bundle-2.50.1.tar */,
 				208D0A3913983C99002C8072 /* git.bundle-1.7.7.2.3.g19dee.tar */,
 				203976631251A63700770D13 /* Credits.rtf */,
 				2010732E11A7E9C300EFDE56 /* app.icns */,
@@ -1899,6 +1867,14 @@
 			isa = PBXProject;
 			attributes = {
 				LastUpgradeCheck = 0420;
+				TargetAttributes = {
+					20915EBA12874D2A005E0D82 = {
+						LastSwiftMigration = 2630;
+					};
+					8D15AC270486D014006FF6A4 = {
+						LastSwiftMigration = 2630;
+					};
+				};
 			};
 			buildConfigurationList = C05733CB08A9546B00998B17 /* Build configuration list for PBXProject "gitbox" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -1981,7 +1957,7 @@
 				20566DE01394469A005186AF /* GBColorLabelBlueCorner.png in Resources */,
 				20566DE11394469A005186AF /* GBColorLabelGrayCorner.png in Resources */,
 				20566DE21394469A005186AF /* GBColorLabelGreenCorner.png in Resources */,
-				20F2FF26181DC80600701116 /* git.bundle-1.8.4.1.3.g7ce914e.tar in Resources */,
+				20F2FF26181DC80600701116 /* git.bundle-2.50.1.tar in Resources */,
 				20566DE31394469A005186AF /* GBColorLabelOrangeCorner.png in Resources */,
 				20566DE41394469A005186AF /* GBColorLabelPurpleCorner.png in Resources */,
 				20566DE51394469A005186AF /* GBColorLabelRedCorner.png in Resources */,
@@ -1996,7 +1972,6 @@
 				2096FDC2139D36E800B79D46 /* GBRepositoryRemotesController.xib in Resources */,
 				20BD5DCE143E2623003B4F2F /* GBToolbarMinus.png in Resources */,
 				20BD5DD5143E48AD003B4F2F /* GBRepositoryConfigController.xib in Resources */,
-				200C159A14670F9E000F4C78 /* GitboxLicense.txt in Resources */,
 				200C15A114672EB2000F4C78 /* GBSubmoduleCloningViewController.xib in Resources */,
 				20C50D2114D5EFF9009786D9 /* MASPreferencesWindow.xib in Resources */,
 				20C50D2A14D5F7FB009786D9 /* GBPreferencesDiffViewController.xib in Resources */,
@@ -2005,11 +1980,9 @@
 				20C50D3514D5F98E009786D9 /* GBPreferencesGithub.png in Resources */,
 				20C50D3714D5F98E009786D9 /* GBPreferencesIgnore.png in Resources */,
 				20C50D3914D5F98E009786D9 /* GBPreferencesUpdates.png in Resources */,
-				20C50D3C14D60441009786D9 /* GBPreferencesLicense.png in Resources */,
 				20C50D4314D6057E009786D9 /* GBPreferencesGithubViewController.xib in Resources */,
 				20A5E37E14D68BE200408DD7 /* GBPreferencesConfigViewController.xib in Resources */,
 				20A5E38214D68BE200408DD7 /* GBPreferencesIgnoreViewController.xib in Resources */,
-				20A5E38614D68BE200408DD7 /* GBPreferencesLicenseViewController.xib in Resources */,
 				20A5E38A14D68BE200408DD7 /* GBPreferencesUpdatesViewController.xib in Resources */,
 				20CFEFA414DD87130086330F /* GBPreferencesIntegration.png in Resources */,
 				20CFEFAB14DDBE6C0086330F /* GBOptimizeRepositoryController.xib in Resources */,
@@ -2072,7 +2045,7 @@
 				20566DE71394469A005186AF /* GBColorLabelBlueCorner.png in Resources */,
 				20566DE81394469A005186AF /* GBColorLabelGrayCorner.png in Resources */,
 				20566DE91394469A005186AF /* GBColorLabelGreenCorner.png in Resources */,
-				20F2FF25181DC80600701116 /* git.bundle-1.8.4.1.3.g7ce914e.tar in Resources */,
+				20F2FF25181DC80600701116 /* git.bundle-2.50.1.tar in Resources */,
 				20566DEA1394469A005186AF /* GBColorLabelOrangeCorner.png in Resources */,
 				20566DEB1394469A005186AF /* GBColorLabelPurpleCorner.png in Resources */,
 				20566DEC1394469A005186AF /* GBColorLabelRedCorner.png in Resources */,
@@ -2087,7 +2060,6 @@
 				2096FDC3139D36E800B79D46 /* GBRepositoryRemotesController.xib in Resources */,
 				20BD5DCD143E2623003B4F2F /* GBToolbarMinus.png in Resources */,
 				20BD5DD4143E48AD003B4F2F /* GBRepositoryConfigController.xib in Resources */,
-				200C159914670F9E000F4C78 /* GitboxLicense.txt in Resources */,
 				200C15A014672EB2000F4C78 /* GBSubmoduleCloningViewController.xib in Resources */,
 				20C50D2014D5EFF9009786D9 /* MASPreferencesWindow.xib in Resources */,
 				20C50D2914D5F7FB009786D9 /* GBPreferencesDiffViewController.xib in Resources */,
@@ -2096,11 +2068,9 @@
 				20C50D3414D5F98E009786D9 /* GBPreferencesGithub.png in Resources */,
 				20C50D3614D5F98E009786D9 /* GBPreferencesIgnore.png in Resources */,
 				20C50D3814D5F98E009786D9 /* GBPreferencesUpdates.png in Resources */,
-				20C50D3B14D60441009786D9 /* GBPreferencesLicense.png in Resources */,
 				20C50D4214D6057E009786D9 /* GBPreferencesGithubViewController.xib in Resources */,
 				20A5E37D14D68BE200408DD7 /* GBPreferencesConfigViewController.xib in Resources */,
 				20A5E38114D68BE200408DD7 /* GBPreferencesIgnoreViewController.xib in Resources */,
-				20A5E38514D68BE200408DD7 /* GBPreferencesLicenseViewController.xib in Resources */,
 				20A5E38914D68BE200408DD7 /* GBPreferencesUpdatesViewController.xib in Resources */,
 				20CFEFA314DD87130086330F /* GBPreferencesIntegration.png in Resources */,
 				20CFEFAA14DDBE6C0086330F /* GBOptimizeRepositoryController.xib in Resources */,
@@ -2238,6 +2208,7 @@
 				20A9719212C7808F00E2B7B9 /* GBStageShortcutHintDetector.m in Sources */,
 				20A971E112C7D0D500E2B7B9 /* GBStageMessageHistoryController.m in Sources */,
 				2016464F12D0C2F6005C69DA /* GBUserpicController.m in Sources */,
+				6FAD35342F7154D300C09C6B /* GBSidebarCellView.swift in Sources */,
 				2016466312D0D0EC005C69DA /* OAHTTPDownload.m in Sources */,
 				2016466412D0D0EC005C69DA /* OAHTTPQueue.m in Sources */,
 				2016466512D0D0EC005C69DA /* OAXMLDecoder.m in Sources */,
@@ -2246,13 +2217,12 @@
 				200433A312DA02CF00B045C0 /* GBGreyGradientView.m in Sources */,
 				2097EB3012DDF4680070AE89 /* GBSidebarOutlineView.m in Sources */,
 				2097EB5B12DDF7D30070AE89 /* GBChangesTableView.m in Sources */,
-				2097EC6D12DE6B450070AE89 /* GBSidebarCell.m in Sources */,
 				20EF8BED12E6603600F3438A /* GBSubmodulesTask.m in Sources */,
 				20EF8BF012E6605100F3438A /* GBSubmodule.m in Sources */,
 				200A41B212EB91B0004DF940 /* OABlockMerger.m in Sources */,
 				200A41CA12EB9B14004DF940 /* GBGitConfig.m in Sources */,
-				200A43EA12EC2507004DF940 /* GBSubmoduleCell.m in Sources */,
 				200A444C12EC2DCE004DF940 /* GBSubmoduleCloningController.m in Sources */,
+				6FAD35382F71550E00C09C6B /* GBBadgeView.swift in Sources */,
 				200A47FA12EF8F07004DF940 /* NSObject+OASelectorNotifications.m in Sources */,
 				20A9407512FA07C100C3F6F4 /* GBRepositoryViewController.m in Sources */,
 				20586A8312FDDBFA00729DB1 /* GBRootController.m in Sources */,
@@ -2301,7 +2271,6 @@
 				20C50D4114D6057E009786D9 /* GBPreferencesGithubViewController.m in Sources */,
 				20A5E37C14D68BE200408DD7 /* GBPreferencesConfigViewController.m in Sources */,
 				20A5E38014D68BE200408DD7 /* GBPreferencesIgnoreViewController.m in Sources */,
-				20A5E38414D68BE200408DD7 /* GBPreferencesLicenseViewController.m in Sources */,
 				20CFEFA814DDBE520086330F /* GBOptimizeRepositoryController.m in Sources */,
 				20F2D1C214E469E3009F3609 /* GBApplication.m in Sources */,
 				207C836114E9C6D3005C91E7 /* YRKSpinningProgressIndicator.m in Sources */,
@@ -2357,6 +2326,7 @@
 				2093A85E11AF33B500239185 /* WhiteNSView.m in Sources */,
 				2093AAAA11B15E1500239185 /* NSSplitView+OASplitViewHelpers.m in Sources */,
 				2093AC8711B2EB9100239185 /* GBCommitPromptController.m in Sources */,
+				6FAD35332F7154D300C09C6B /* GBSidebarCellView.swift in Sources */,
 				200B08B511B6E359004C09A8 /* GBLocalRemoteAssociationTask.m in Sources */,
 				20B399FA11B7F30600D6A3C4 /* GBLocalRefsTask.m in Sources */,
 				209A935F11BA934C006B0B5C /* GBFileEditingController.m in Sources */,
@@ -2404,11 +2374,9 @@
 				200433A212DA02CF00B045C0 /* GBGreyGradientView.m in Sources */,
 				2097EB2F12DDF4680070AE89 /* GBSidebarOutlineView.m in Sources */,
 				2097EB5C12DDF7D30070AE89 /* GBChangesTableView.m in Sources */,
-				2097EC6C12DE6B450070AE89 /* GBSidebarCell.m in Sources */,
 				70EEC8D012DFE33E00DD1555 /* GBSubmodulesTask.m in Sources */,
 				200A41B112EB91B0004DF940 /* OABlockMerger.m in Sources */,
 				200A41C912EB9B14004DF940 /* GBGitConfig.m in Sources */,
-				200A43E912EC2507004DF940 /* GBSubmoduleCell.m in Sources */,
 				200A444B12EC2DCE004DF940 /* GBSubmoduleCloningController.m in Sources */,
 				200A47FB12EF8F07004DF940 /* NSObject+OASelectorNotifications.m in Sources */,
 				20A9407612FA07C100C3F6F4 /* GBRepositoryViewController.m in Sources */,
@@ -2424,6 +2392,7 @@
 				20AAFACC1347CD9700A8E31F /* OABlockTable.m in Sources */,
 				20DD4DC3134B4F7300E6E6B7 /* NSObject+OAResponderChain.m in Sources */,
 				201E27431350C26F00DF6D94 /* OAPseudoTTY.m in Sources */,
+				6FAD35392F71550E00C09C6B /* GBBadgeView.swift in Sources */,
 				20E698DB13635AE8000A3A6F /* GBAskPassServer.m in Sources */,
 				20330C131365B72A006B2457 /* GBAskPassBooleanPromptController.m in Sources */,
 				203FF1CF1365C2ED000624D6 /* GBAskPassCredentialsController.m in Sources */,
@@ -2459,7 +2428,6 @@
 				20C50D4014D6057E009786D9 /* GBPreferencesGithubViewController.m in Sources */,
 				20A5E37B14D68BE200408DD7 /* GBPreferencesConfigViewController.m in Sources */,
 				20A5E37F14D68BE200408DD7 /* GBPreferencesIgnoreViewController.m in Sources */,
-				20A5E38314D68BE200408DD7 /* GBPreferencesLicenseViewController.m in Sources */,
 				20A5E38714D68BE200408DD7 /* GBPreferencesUpdatesViewController.m in Sources */,
 				20CFEFA714DDBE520086330F /* GBOptimizeRepositoryController.m in Sources */,
 				20F2D1C114E469E3009F3609 /* GBApplication.m in Sources */,
@@ -2565,6 +2533,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
 				COPY_PHASE_STRIP = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -2582,6 +2551,9 @@
 					"\"$(SRCROOT)/openssl/lib\"",
 				);
 				PRODUCT_NAME = Gitbox;
+				SWIFT_OBJC_BRIDGING_HEADER = "Classes/Gitbox AppStore-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
 			};
 			name = Debug;
 		};
@@ -2589,6 +2561,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "3rd Party Mac Developer Application: Oleg Andreev";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				FRAMEWORK_SEARCH_PATHS = (
@@ -2606,6 +2579,8 @@
 				);
 				PRODUCT_NAME = Gitbox;
 				PROVISIONING_PROFILE = "B3B8F00F-28E7-47A0-B749-8073CDC9A70E";
+				SWIFT_OBJC_BRIDGING_HEADER = "Classes/Gitbox AppStore-Bridging-Header.h";
+				SWIFT_VERSION = 6.0;
 			};
 			name = Release;
 		};
@@ -2613,6 +2588,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGN_IDENTITY = "";
 				COPY_PHASE_STRIP = NO;
@@ -2627,11 +2603,15 @@
 				GCC_PREFIX_HEADER = prefix.pch;
 				INFOPLIST_FILE = info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/openssl/lib\"",
 				);
 				PRODUCT_NAME = Gitbox;
+				SWIFT_OBJC_BRIDGING_HEADER = "Classes/Gitbox-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
 			};
 			name = Debug;
 		};
@@ -2639,6 +2619,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGN_IDENTITY = "";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
@@ -2651,64 +2632,63 @@
 				GCC_PREFIX_HEADER = prefix.pch;
 				INFOPLIST_FILE = info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/openssl/lib\"",
 				);
 				PRODUCT_NAME = Gitbox;
+				SWIFT_OBJC_BRIDGING_HEADER = "Classes/Gitbox-Bridging-Header.h";
+				SWIFT_VERSION = 6.0;
 			};
 			name = Release;
 		};
 		C05733CC08A9546B00998B17 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				APP_VERSION = "2013-10-28";
+				APP_VERSION = 1.7.0;
 				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer: Oleg Andreev (9F23AVDPMZ)";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_VERSION = "";
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				HEADER_SEARCH_PATHS = (
-					"$(SRCROOT)/libgit2/include",
-					"$(SRCROOT)/openssl/include",
-				);
+				HEADER_SEARCH_PATHS = "$(SRCROOT)/libgit2/include";
 				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/libgit2/build";
-				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_CFLAGS = "-DDEBUG=1";
-				OTHER_LDFLAGS = "-lcrypto";
+				OTHER_LDFLAGS = "";
 				PROVISIONING_PROFILE = "903A155A-8E32-4C2E-A88C-EBECA6C54744";
 				SDKROOT = macosx;
 				SPARKLE_FEED_URL = "http://gitboxapp.com/updates-beta.xml";
-				VALID_ARCHS = x86_64;
+				VALID_ARCHS = "arm64 x86_64";
 			};
 			name = Debug;
 		};
 		C05733CD08A9546B00998B17 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				APP_VERSION = 1.6.4;
+				APP_VERSION = 1.7.0;
 				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer: Oleg Andreev (9F23AVDPMZ)";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_VERSION = "";
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				HEADER_SEARCH_PATHS = (
-					"$(SRCROOT)/libgit2/include",
-					"$(SRCROOT)/openssl/include",
-				);
+				HEADER_SEARCH_PATHS = "$(SRCROOT)/libgit2/include";
 				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/libgit2/build";
-				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_CFLAGS = "";
-				OTHER_LDFLAGS = "-lcrypto";
+				OTHER_LDFLAGS = "";
 				PROVISIONING_PROFILE = "7B4612BC-080E-4DF6-AF28-41D93A00F71B";
 				SDKROOT = macosx;
 				SPARKLE_FEED_URL = "http://gitboxapp.com/updates.xml";
-				VALID_ARCHS = x86_64;
+				VALID_ARCHS = "arm64 x86_64";
 			};
 			name = Release;
 		};

@@ -71,6 +71,47 @@ jobs:
             -exportPath "$RUNNER_TEMP/export" \
             -exportOptionsPlist scripts/export-options.plist
 
+      - name: Sign embedded git bundle binaries
+        run: |
+          APP_PATH="$RUNNER_TEMP/export/Gitbox.app"
+          IDENTITY="Developer ID Application: Marmaladesoul Pty Ltd ($TEAM_ID)"
+          RESOURCES="$APP_PATH/Contents/Resources"
+
+          # Find the git bundle tar and extract it
+          GIT_TAR=$(ls "$RESOURCES"/git.bundle-*.tar 2>/dev/null | head -1)
+          if [ -n "$GIT_TAR" ]; then
+            echo "Extracting $GIT_TAR"
+            EXTRACT_DIR="$RUNNER_TEMP/git-bundle-extract"
+            mkdir -p "$EXTRACT_DIR"
+            tar -xf "$GIT_TAR" -C "$EXTRACT_DIR"
+
+            # Sign all Mach-O binaries inside the extracted bundle
+            find "$EXTRACT_DIR" -type f | while read -r binary; do
+              if file "$binary" | grep -qE "Mach-O"; then
+                echo "Signing: ${binary#$EXTRACT_DIR/}"
+                codesign --force --options runtime --timestamp --sign "$IDENTITY" "$binary"
+              fi
+            done
+
+            # Re-tar the signed bundle
+            echo "Re-creating tar with signed binaries"
+            tar -cf "$GIT_TAR" -C "$EXTRACT_DIR" .
+            rm -rf "$EXTRACT_DIR"
+          fi
+
+          # Sign any other Mach-O binaries directly in the app
+          find "$APP_PATH" -type f \( -perm +111 -o -name "*.dylib" \) ! -name "*.tar" | while read -r binary; do
+            if file "$binary" | grep -qE "Mach-O"; then
+              echo "Signing: ${binary#$APP_PATH/}"
+              codesign --force --options runtime --timestamp --sign "$IDENTITY" "$binary" 2>/dev/null || true
+            fi
+          done
+
+          # Re-sign the main app bundle (top-level seal)
+          codesign --force --deep --options runtime --timestamp --sign "$IDENTITY" "$APP_PATH"
+          codesign --verify --deep --strict "$APP_PATH"
+          echo "All binaries signed successfully"
+
       - name: Notarise
         env:
           API_KEY_ID: ${{ secrets.APPSTORE_CONNECT_API_KEY_ID }}

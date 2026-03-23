@@ -35,8 +35,7 @@
 
 + (NSString*) bundledGitVersion
 {
-    return @"1.8.4.1.3.g7ce914e";
-	//return @"1.7.7.2.3.g19dee";
+    return @"2.50.1";
 }
 
 + (NSString*) pathToBundledBinary:(NSString*)name

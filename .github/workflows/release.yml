@@ -27,6 +27,13 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Build libgit2
+        run: |
+          cd libgit2
+          mkdir -p build && cd build
+          cmake .. -DBUILD_SHARED_LIBS=OFF -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
+          cmake --build .
+
       - name: Import signing certificate
         env:
           P12_BASE64: ${{ secrets.DEVELOPER_ID_CERT_P12 }}

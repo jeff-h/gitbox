@@ -147,12 +147,12 @@ jobs:
           ZIP_PATH="$RUNNER_TEMP/export/Gitbox-${{ inputs.version }}.zip"
           DOWNLOAD_URL="https://github.com/${{ github.repository }}/releases/download/v${{ inputs.version }}/Gitbox-${{ inputs.version }}.zip"
 
-          # Write key to temp file
-          KEY_FILE="$RUNNER_TEMP/sparkle_eddsa.key"
-          echo "$SPARKLE_KEY" > "$KEY_FILE"
+          # Generate EdDSA signature via stdin
+          SIGN_OUTPUT=$(echo "$SPARKLE_KEY" | bin/sign_update --ed-key-file - "$ZIP_PATH" 2>&1) || true
+          echo "sign_update output: $SIGN_OUTPUT"
 
-          # Generate EdDSA signature
-          SIGNATURE=$(bin/sign_update -f "$KEY_FILE" "$ZIP_PATH" 2>/dev/null || echo "")
+          # Extract just the signature value from output like: sparkle:edSignature="xxx" length="yyy"
+          SIGNATURE=$(echo "$SIGN_OUTPUT" | grep -o 'edSignature="[^"]*"' | sed 's/edSignature="//;s/"//')
 
           if [ -z "$SIGNATURE" ]; then
             echo "::warning::Could not generate Sparkle signature. Appcast will be missing edSignature."

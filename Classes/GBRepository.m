@@ -109,12 +109,6 @@
 	
 	 // smart setter
 	
-	
-	
-	if (dispatchQueue) dispatch_release(dispatchQueue);
-    if (remoteDispatchQueue) dispatch_release(remoteDispatchQueue);
-	
-	
 }
 
 
@@ -137,7 +131,6 @@
 		});
 		
 		dispatchQueue = queues[(queueId++) % GBRepoDispatchQueuesMax];
-		dispatch_retain(dispatchQueue);
 		remoteDispatchQueue = dispatch_queue_create("com.oleganza.gitbox.repo_remote_task_queue", NULL);
 		
 		self.blockTable = [OABlockTable new];
@@ -151,8 +144,6 @@
 {
 	if (aDispatchQueue)
 	{
-		if (dispatchQueue) dispatch_release(dispatchQueue);
-		dispatch_retain(aDispatchQueue);
 		dispatchQueue = aDispatchQueue;
 	}
 }
@@ -621,7 +612,7 @@
 	//	pathURL isFileURL = 1
 	//	pathURL path = /Users/oleganza/Work/gitbox
 	//	pathURL absolute path = /Users/oleganza/Work/gitbox
-	return [NSURL URLWithString:[relativePath stringByAddingAllPercentEscapesUsingEncoding:NSUTF8StringEncoding] relativeToURL:self.url];
+	return [NSURL fileURLWithPath:relativePath relativeToURL:self.url];
 }
 
 

@@ -19,10 +19,10 @@
     if ((self = [self init]))
 	{
 		// TODO: not tested, not used yet.
-		if (![[NSFileManager new] fileExistsAtPath:self.userConfigURL.path])
-		{
-			[[NSData data] writeToFile:self.userConfigURL.path atomically:YES encoding:NSUTF8StringEncoding error:NULL];
-		}
+        if (![[NSFileManager new] fileExistsAtPath:self.userConfigURL.path])
+        {
+            [@"" writeToFile:self.userConfigURL.path atomically:YES encoding:NSUTF8StringEncoding error:NULL];
+        }
 		
 		git_error error = git_config_open_global(&config);
 		

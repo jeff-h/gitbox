@@ -418,7 +418,7 @@
 	stageStateCounter++;
 	[self beginStageTransaction:^{
 		GBTask* task = [self.repository task];
-		task.arguments = [NSArray arrayWithObjects:@"add", @"--ignore-removal" @".", nil];
+		task.arguments = [NSArray arrayWithObjects:@"add", @"--ignore-removal", @".", nil];
 		[self.repository launchTask:task withBlock:^{
 			[task showErrorIfNeeded];
 			[self endStageTransaction];

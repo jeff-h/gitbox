@@ -90,11 +90,11 @@ NSString* OATaskDidDeallocateNotification  = @"OATaskDidDeallocateNotification";
 														object:value
 													  userInfo:@{@"terminationStatus":@(self.terminationStatus)}];
 
-	if (dispatchQueue) { dispatch_release(dispatchQueue); dispatchQueue = nil; }
+	if (dispatchQueue) { dispatchQueue = nil; }
 	 didTerminateBlock = nil;
 	 didReceiveDataBlock = nil;
 	
-	if (originDispatchQueue) { dispatch_release(originDispatchQueue); originDispatchQueue = nil; };
+	if (originDispatchQueue) { originDispatchQueue = nil; };
 	
 	
 }
@@ -234,22 +234,16 @@ NSString* OATaskDidDeallocateNotification  = @"OATaskDidDeallocateNotification";
 	return s;
 }
 
-- (void) setDispatchQueue:(dispatch_queue_t)aDispatchQueue
-{
-	if (aDispatchQueue == dispatchQueue) return;
-	
-	if (dispatchQueue) dispatch_release(dispatchQueue);
-	dispatchQueue = aDispatchQueue;
-	if (dispatchQueue) dispatch_retain(dispatchQueue);
+- (void)setDispatchQueue:(dispatch_queue_t)aDispatchQueue {
+    if (aDispatchQueue == dispatchQueue) return;
+    
+    dispatchQueue = aDispatchQueue;  // ARC handles retaining and releasing
 }
 
-- (void) setOriginDispatchQueue:(dispatch_queue_t)anOriginDispatchQueue
-{
-	if (anOriginDispatchQueue == originDispatchQueue) return;
-	
-	if (originDispatchQueue) dispatch_release(originDispatchQueue);
-	originDispatchQueue = anOriginDispatchQueue;
-	if (originDispatchQueue) dispatch_retain(originDispatchQueue);
+- (void)setOriginDispatchQueue:(dispatch_queue_t)anOriginDispatchQueue {
+    if (anOriginDispatchQueue == originDispatchQueue) return;
+    
+    originDispatchQueue = anOriginDispatchQueue;  // ARC handles retaining and releasing
 }
 
 // Add/modify environment variables 
@@ -545,32 +539,31 @@ NSString* OATaskDidDeallocateNotification  = @"OATaskDidDeallocateNotification";
 
 - (void) prepareLaunchPathIfNeeded:(void(^)())aBlock
 {
-	if (!self.launchPath && self.executableName)
-	{
-		aBlock = [aBlock copy];
-		NSString* exec = self.executableName;
-		dispatch_queue_t originQueue = dispatch_get_current_queue();
-		dispatch_retain(originQueue);
-		dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-			NSString* aPath = [[self class] systemPathForExecutable:exec];
-			dispatch_async(originQueue, ^{
-				if (aPath)
-				{
-					self.launchPath = aPath;
-				}
-				else
-				{
-					NSLog(@"OATask: launchPath is not found for executable %@", self.executableName);
-				}
-				if (aBlock) aBlock();
-				dispatch_release(originQueue);
-			});
-		});
-	}
-	else
-	{
-		if (aBlock) aBlock();
-	}
+    if (!self.launchPath && self.executableName)
+    {
+        aBlock = [aBlock copy];
+        NSString* exec = self.executableName;
+        dispatch_queue_t originQueue = dispatch_get_main_queue(); // replace deprecated function
+        
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            NSString* aPath = [[self class] systemPathForExecutable:exec];
+            dispatch_async(originQueue, ^{
+                if (aPath)
+                {
+                    self.launchPath = aPath;
+                }
+                else
+                {
+                    NSLog(@"OATask: launchPath is not found for executable %@", self.executableName);
+                }
+                if (aBlock) aBlock();
+            });
+        });
+    }
+    else
+    {
+        if (aBlock) aBlock();
+    }
 }
 
 - (NSTask*) nstask
@@ -793,9 +786,6 @@ NSString* OATaskDidDeallocateNotification  = @"OATaskDidDeallocateNotification";
 		});
 	}
 	dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
-	dispatch_release(group);
-	dispatch_release(stdoutQueue);
-	dispatch_release(stderrQueue);
 }
 
 

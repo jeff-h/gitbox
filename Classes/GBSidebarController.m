@@ -42,12 +42,23 @@
 - (void) loadView
 {
 	[super loadView];
+
+	// Sidebar background — Gitbox v1 nostalgic grey (#D6DCE4)
+	NSScrollView *scrollView = [self.outlineView enclosingScrollView];
+	if (scrollView)
+	{
+		NSColor *sidebarBg = [NSColor colorWithSRGBRed:0xEB/255.0 green:0xEE/255.0 blue:0xF2/255.0 alpha:1.0];
+		scrollView.backgroundColor = sidebarBg;
+		self.outlineView.backgroundColor = sidebarBg;
+	}
+
 	if (!self.jumpController) self.jumpController = [OAFastJumpController controller];
 	[self.outlineView registerForDraggedTypes:[NSArray arrayWithObjects:GBSidebarItemPasteboardType, NSFilenamesPboardType, nil]];
 	[self.outlineView setDraggingSourceOperationMask:NSDragOperationEvery forLocal:YES];
 	[self.outlineView setDraggingSourceOperationMask:NSDragOperationEvery forLocal:NO];
 	[self.outlineView setMenu:[self defaultMenu]];
 	[self.outlineView setAutoresizesOutlineColumn:NO];
+	[self.outlineView setFloatsGroupRows:NO];
 	[self updateContents];
 }
 
@@ -319,6 +330,20 @@
 - (BOOL) outlineView:(NSOutlineView*)anOutlineView isGroupItem:(GBSidebarItem*)item
 {
 	return [item isSection];
+}
+
+- (BOOL) outlineView:(NSOutlineView*)anOutlineView shouldCollapseItem:(GBSidebarItem*)item
+{
+	// Prevent collapsing section headers (e.g. REPOSITORIES)
+	if ([item isSection]) return NO;
+	return YES;
+}
+
+- (BOOL) outlineView:(NSOutlineView*)anOutlineView shouldShowOutlineCellForItem:(GBSidebarItem*)item
+{
+	// Hide the disclosure triangle on section headers
+	if ([item isSection]) return NO;
+	return YES;
 }
 
 - (BOOL) outlineView:(NSOutlineView*)anOutlineView shouldSelectItem:(GBSidebarItem*)item

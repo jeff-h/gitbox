@@ -25,7 +25,7 @@
                         <rect key="frame" x="0.0" y="0.0" width="261" height="272"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <outlineView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" selectionHighlightStyle="sourceList" columnResizing="NO" autosaveColumns="NO" typeSelect="NO" autosaveName="sourcerepositories" rowHeight="20" indentationPerLevel="14" autoresizesOutlineColumn="YES" outlineTableColumn="7" id="5" customClass="GBSidebarOutlineView">
+                            <outlineView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" selectionHighlightStyle="sourceList" columnResizing="NO" autosaveColumns="NO" typeSelect="NO" autosaveName="sourcerepositories" rowHeight="32" indentationPerLevel="14" autoresizesOutlineColumn="YES" outlineTableColumn="7" id="5" customClass="GBSidebarOutlineView">
                                 <rect key="frame" x="0.0" y="0.0" width="261" height="272"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <size key="intercellSpacing" width="3" height="0.0"/>

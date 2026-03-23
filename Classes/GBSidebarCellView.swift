@@ -6,7 +6,7 @@ import Cocoa
 class GBSidebarCellView: NSTableCellView, NSTextFieldDelegate {
 
     @objc static let cellIdentifier = NSUserInterfaceItemIdentifier("GBSidebarCellView")
-    @objc static let rowHeight: CGFloat = 20
+    @objc static let rowHeight: CGFloat = 32
 
     private let iconImageView = NSImageView()
     private let titleLabel = NSTextField(labelWithString: "")
@@ -20,15 +20,18 @@ class GBSidebarCellView: NSTableCellView, NSTextFieldDelegate {
     /// Set by the controller when the outline view is preparing a drag image.
     @objc var isDragging: Bool = false
 
-    // Layout constants matching the original GBSidebarCell pixel values
-    private static let iconSize: CGFloat = 16
-    private static let iconLeftPadding: CGFloat = 3
-    private static let iconRightPadding: CGFloat = 2
-    private static let iconLeadingSpace: CGFloat = 6 // NSDivideRect leading slice
-    private static let textYOffset: CGFloat = 3
+    /// Whether the current icon is an SF Symbol (for tinting behaviour).
+    private var iconIsSFSymbol: Bool = false
+
+    // Layout constants — matching NNW's medium row style
+    private static let iconSymbolSize: CGFloat = 18
+    private static let iconFrameSize: CGFloat = 22
+    private static let iconMarginLeft: CGFloat = 2
+    private static let iconMarginRight: CGFloat = 5
+    private static let fontSize: CGFloat = 13
     private static let spinnerSize: CGFloat = 16
-    private static let extraRightPadding: CGFloat = 2
-    private static let extraLeftPadding: CGFloat = 2
+    private static let rightPadding: CGFloat = 4
+    private static let elementGap: CGFloat = 6
 
     // MARK: - Init
 
@@ -43,13 +46,22 @@ class GBSidebarCellView: NSTableCellView, NSTextFieldDelegate {
     }
 
     private func setupSubviews() {
+        // Observe window main state for badge colouring
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(windowMainStateChanged),
+            name: NSWindow.didBecomeMainNotification, object: nil)
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(windowMainStateChanged),
+            name: NSWindow.didResignMainNotification, object: nil)
+
         // Icon
         iconImageView.imageScaling = .scaleProportionallyDown
-        iconImageView.setContentHuggingPriority(.required, for: .horizontal)
+        iconImageView.contentTintColor = .secondaryLabelColor
         addSubview(iconImageView)
 
         // Title
-        titleLabel.font = NSFont.systemFont(ofSize: 11)
+        titleLabel.font = NSFont.systemFont(ofSize: Self.fontSize)
+        titleLabel.textColor = .controlTextColor
         titleLabel.lineBreakMode = .byTruncatingTail
         titleLabel.cell?.usesSingleLineMode = true
         titleLabel.isEditable = false
@@ -89,10 +101,8 @@ class GBSidebarCellView: NSTableCellView, NSTextFieldDelegate {
         titleLabel.isEditable = item.isEditable
         titleLabel.delegate = item.isEditable ? self : nil
 
-        // Icon
-        let image = item.image
-        image?.size = NSSize(width: Self.iconSize, height: Self.iconSize)
-        iconImageView.image = image
+        // Icon — use the item's image, with SF Symbol fallbacks
+        configureIcon(for: item)
 
         // Title
         titleLabel.stringValue = item.title ?? ""
@@ -117,7 +127,48 @@ class GBSidebarCellView: NSTableCellView, NSTextFieldDelegate {
             badgeView.count = 0
         }
 
+        // Keep badge colour in sync with window state on every refresh
+        badgeView.isWindowForeground = window?.isMainWindow ?? true
+
         needsLayout = true
+    }
+
+    private func configureIcon(for item: GBSidebarItem) {
+        iconIsSFSymbol = false
+
+        // Section headers (REPOSITORIES) — no icon
+        if item.isSection {
+            iconImageView.image = nil
+            iconImageView.isHidden = true
+            iconImageView.contentTintColor = nil
+            return
+        }
+
+        iconImageView.isHidden = false
+        let symbolConfig = NSImage.SymbolConfiguration(pointSize: Self.iconSymbolSize, weight: .regular)
+        var symbolName: String
+        var accessibilityDesc: String
+
+        // Check if this is an uncloned submodule
+        if let obj = item.object,
+           obj.responds(to: #selector(GBSidebarItemObject.sidebarItemActionButtonTitle)),
+           let title = obj.sidebarItemActionButtonTitle?(),
+           title == NSLocalizedString("Download", comment: "") {
+            symbolName = "folder.fill.badge.questionmark"
+            accessibilityDesc = "Not downloaded"
+        } else if item.object is GBRepositoriesGroup {
+            symbolName = "folder"
+            accessibilityDesc = "Group"
+        } else {
+            symbolName = "folder.fill"
+            accessibilityDesc = "Repository"
+        }
+
+        let image = NSImage(systemSymbolName: symbolName, accessibilityDescription: accessibilityDesc)?
+            .withSymbolConfiguration(symbolConfig)
+        iconIsSFSymbol = true
+        iconImageView.image = image
+        iconImageView.contentTintColor = .controlAccentColor
     }
 
     private func configureActionButton(for item: GBSidebarItem) {
@@ -162,26 +213,26 @@ class GBSidebarCellView: NSTableCellView, NSTextFieldDelegate {
         let bounds = self.bounds
 
         // Icon: left-aligned, vertically centred
-        let iconX = Self.iconLeftPadding
-        let iconY = round((bounds.height - Self.iconSize) / 2)
-        iconImageView.frame = NSRect(x: iconX, y: iconY, width: Self.iconSize, height: Self.iconSize)
+        let iconX = Self.iconMarginLeft
+        let iconY = round((bounds.height - Self.iconFrameSize) / 2)
+        iconImageView.frame = NSRect(x: iconX, y: iconY, width: Self.iconFrameSize, height: Self.iconFrameSize)
 
         // Right-side elements: action button > spinner > badge (first visible wins)
-        var rightEdge = bounds.maxX - Self.extraRightPadding
+        var rightEdge = bounds.maxX - Self.rightPadding
 
         if !actionButton.isHidden {
             let buttonSize = actionButton.frame.size
             let buttonX = rightEdge - buttonSize.width
             let buttonY = round((bounds.height - buttonSize.height) / 2)
             actionButton.frame = NSRect(x: buttonX, y: buttonY, width: buttonSize.width, height: buttonSize.height)
-            rightEdge = buttonX - Self.extraLeftPadding
+            rightEdge = buttonX - Self.elementGap
         }
 
         if !spinnerView.isHidden {
             let spinnerX = rightEdge - Self.spinnerSize
             let spinnerY = round((bounds.height - Self.spinnerSize) / 2)
             spinnerView.frame = NSRect(x: spinnerX, y: spinnerY, width: Self.spinnerSize, height: Self.spinnerSize)
-            rightEdge = spinnerX - Self.extraLeftPadding
+            rightEdge = spinnerX - Self.elementGap
         }
 
         if !badgeView.isHidden {
@@ -189,32 +240,49 @@ class GBSidebarCellView: NSTableCellView, NSTextFieldDelegate {
             let badgeWidth = badgeSize.width
             let badgeX = rightEdge - badgeWidth
             badgeView.frame = NSRect(x: badgeX, y: 0, width: badgeWidth, height: bounds.height)
-            rightEdge = badgeX - Self.extraLeftPadding
+            rightEdge = badgeX - Self.elementGap
         }
 
-        // Title: fills remaining space
-        let textX = Self.iconLeadingSpace + Self.iconSize + Self.iconRightPadding
+        // Title: fills remaining space between icon and right-side elements
+        let textX: CGFloat
+        if iconImageView.isHidden {
+            textX = Self.iconMarginLeft
+        } else {
+            textX = Self.iconMarginLeft + Self.iconFrameSize + Self.iconMarginRight
+        }
         let textWidth = max(rightEdge - textX, 0)
-        titleLabel.frame = NSRect(x: textX, y: 0, width: textWidth, height: bounds.height)
+        let textHeight = titleLabel.intrinsicContentSize.height
+        let textY = round((bounds.height - textHeight) / 2)
+        titleLabel.frame = NSRect(x: textX, y: textY, width: textWidth, height: textHeight)
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
 
     // MARK: - Selection styling
+
+    @objc private func windowMainStateChanged(_ notification: Notification) {
+        guard let notifWindow = notification.object as? NSWindow,
+              notifWindow == window else { return }
+        let isForeground = notifWindow.isMainWindow
+        badgeView.isWindowForeground = isForeground
+    }
 
     override var backgroundStyle: NSView.BackgroundStyle {
         didSet {
             let isEmphasised = (backgroundStyle == .emphasized)
 
             // Title
-            if isEmphasised {
-                titleLabel.textColor = .alternateSelectedControlTextColor
-                titleLabel.font = NSFont.boldSystemFont(ofSize: 11)
-            } else {
-                titleLabel.textColor = .controlTextColor
-                titleLabel.font = NSFont.systemFont(ofSize: 11)
+            titleLabel.textColor = isEmphasised ? .alternateSelectedControlTextColor : .controlTextColor
+
+            // Icon tint — white when selected for SF Symbols
+            if iconIsSFSymbol {
+                iconImageView.contentTintColor = isEmphasised ? .alternateSelectedControlTextColor : .controlAccentColor
             }
 
-            // Badge
-            let isForeground = window?.isMainWindow ?? false
+            // Badge — default to true when window is nil (cell not yet in hierarchy)
+            let isForeground = window?.isMainWindow ?? true
             badgeView.isEmphasised = isEmphasised
             badgeView.isWindowForeground = isForeground
 

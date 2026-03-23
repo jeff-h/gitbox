@@ -2,6 +2,7 @@ name: Build & Release
 
 on:
   workflow_dispatch:
+    branches: [release]
     inputs:
       version:
         description: 'Version number (e.g. 1.0.0)'
@@ -25,6 +26,13 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
+
+      - name: Build libgit2
+        run: |
+          cd libgit2
+          mkdir -p build && cd build
+          cmake .. -DBUILD_SHARED_LIBS=OFF -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+          cmake --build .
 
       - name: Import signing certificate
         env:
@@ -63,6 +71,47 @@ jobs:
             -exportPath "$RUNNER_TEMP/export" \
             -exportOptionsPlist scripts/export-options.plist
 
+      - name: Sign embedded git bundle binaries
+        run: |
+          APP_PATH="$RUNNER_TEMP/export/Gitbox.app"
+          IDENTITY="Developer ID Application: Marmaladesoul Pty Ltd ($TEAM_ID)"
+          RESOURCES="$APP_PATH/Contents/Resources"
+
+          # Find the git bundle tar and extract it
+          GIT_TAR=$(ls "$RESOURCES"/git.bundle-*.tar 2>/dev/null | head -1)
+          if [ -n "$GIT_TAR" ]; then
+            echo "Extracting $GIT_TAR"
+            EXTRACT_DIR="$RUNNER_TEMP/git-bundle-extract"
+            mkdir -p "$EXTRACT_DIR"
+            tar -xf "$GIT_TAR" -C "$EXTRACT_DIR"
+
+            # Sign all Mach-O binaries inside the extracted bundle
+            find "$EXTRACT_DIR" -type f | while read -r binary; do
+              if file "$binary" | grep -qE "Mach-O"; then
+                echo "Signing: ${binary#$EXTRACT_DIR/}"
+                codesign --force --options runtime --timestamp --sign "$IDENTITY" "$binary"
+              fi
+            done
+
+            # Re-tar the signed bundle
+            echo "Re-creating tar with signed binaries"
+            tar -cf "$GIT_TAR" -C "$EXTRACT_DIR" .
+            rm -rf "$EXTRACT_DIR"
+          fi
+
+          # Sign any other Mach-O binaries directly in the app
+          find "$APP_PATH" -type f \( -perm +111 -o -name "*.dylib" \) ! -name "*.tar" | while read -r binary; do
+            if file "$binary" | grep -qE "Mach-O"; then
+              echo "Signing: ${binary#$APP_PATH/}"
+              codesign --force --options runtime --timestamp --sign "$IDENTITY" "$binary" 2>/dev/null || true
+            fi
+          done
+
+          # Re-sign the main app bundle (top-level seal)
+          codesign --force --deep --options runtime --timestamp --sign "$IDENTITY" "$APP_PATH"
+          codesign --verify --deep --strict "$APP_PATH"
+          echo "All binaries signed successfully"
+
       - name: Notarise
         env:
           API_KEY_ID: ${{ secrets.APPSTORE_CONNECT_API_KEY_ID }}
@@ -98,12 +147,12 @@ jobs:
           ZIP_PATH="$RUNNER_TEMP/export/Gitbox-${{ inputs.version }}.zip"
           DOWNLOAD_URL="https://github.com/${{ github.repository }}/releases/download/v${{ inputs.version }}/Gitbox-${{ inputs.version }}.zip"
 
-          # Write key to temp file
-          KEY_FILE="$RUNNER_TEMP/sparkle_eddsa.key"
-          echo "$SPARKLE_KEY" > "$KEY_FILE"
+          # Generate EdDSA signature via stdin
+          SIGN_OUTPUT=$(echo "$SPARKLE_KEY" | bin/sign_update --ed-key-file - "$ZIP_PATH" 2>&1) || true
+          echo "sign_update output: $SIGN_OUTPUT"
 
-          # Generate EdDSA signature
-          SIGNATURE=$(bin/sign_update -f "$KEY_FILE" "$ZIP_PATH" 2>/dev/null || echo "")
+          # Extract just the signature value from output like: sparkle:edSignature="xxx" length="yyy"
+          SIGNATURE=$(echo "$SIGN_OUTPUT" | grep -o 'edSignature="[^"]*"' | sed 's/edSignature="//;s/"//')
 
           if [ -z "$SIGNATURE" ]; then
             echo "::warning::Could not generate Sparkle signature. Appcast will be missing edSignature."

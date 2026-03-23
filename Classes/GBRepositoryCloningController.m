@@ -2,7 +2,6 @@
 #import "GBRepositoryCloningViewController.h"
 #import "GBRepositoryCloningController.h"
 #import "GBCloneTask.h"
-#import "GBSidebarCell.h"
 #import "GBRepositoryController.h"
 #import "NSString+OAStringHelpers.h"
 #import "NSObject+OASelectorNotifications.h"
@@ -44,8 +43,7 @@
 		self.sidebarItem.selectable = YES;
 		self.sidebarItem.draggable = YES;
 		self.sidebarItem.image = [NSImage imageNamed:NSImageNameFolder];
-		self.sidebarItem.cell = [[GBSidebarCell alloc] initWithItem:self.sidebarItem];
-		
+
 		self.viewController = [[GBRepositoryCloningViewController alloc] initWithNibName:@"GBRepositoryCloningViewController" bundle:nil];
 		self.viewController.repositoryController = self;
 	}
@@ -103,7 +101,6 @@
 		
 		//NSLog(@"!! Task finished. Decrementing a spinner.");
 		self.isSpinning--;
-		[self.sidebarItem removeAllViews];
 		[self.sidebarItem update];
 		
 		self.task = nil;
@@ -144,7 +141,6 @@
 	{
 		//NSLog(@"!! Task cancelled. Decrementing a spinner. Terminating a task.");
 		self.isSpinning--;
-		[self.sidebarItem removeAllViews];
 		[self.sidebarItem update];
 		OATask* t = self.task;
 		self.task = nil;

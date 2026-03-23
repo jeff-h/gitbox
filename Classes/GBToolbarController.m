@@ -135,13 +135,13 @@
   [self.toolbar insertItemWithItemIdentifier:itemIdentifier2 atIndex:itemIndex];
 }
 
-// Removes all the items except for the first one: the "add" button.
+// Removes all the items.
 - (void) removeAdditionalItems
 {
   NSInteger c = [[self.toolbar items] count];
-  for (NSInteger i = 1; i < c; i++)
+  for (NSInteger i = 0; i < c; i++)
   {
-    [self.toolbar removeItemAtIndex:1]; // 1 means we are removing the second item until there's no items left
+    [self.toolbar removeItemAtIndex:0]; // 0 means we are removing the first item until there's no items left
   }
 }
 

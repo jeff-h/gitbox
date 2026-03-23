@@ -1,0 +1,137 @@
+name: Build & Release
+
+on:
+  workflow_dispatch:
+    branches: [release]
+    inputs:
+      version:
+        description: 'Version number (e.g. 1.0.0)'
+        required: true
+        type: string
+
+env:
+  SCHEME: Gitbox
+  CONFIGURATION: Release
+  APP_NAME: Gitbox
+  TEAM_ID: TQ7ARU352D
+
+jobs:
+  build-sign-release:
+    runs-on: macos-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Import signing certificate
+        env:
+          P12_BASE64: ${{ secrets.DEVELOPER_ID_CERT_P12 }}
+          P12_PASSWORD: ${{ secrets.DEVELOPER_ID_CERT_PASSWORD }}
+        run: |
+          CERT_PATH="$RUNNER_TEMP/certificate.p12"
+          KEYCHAIN_PATH="$RUNNER_TEMP/build.keychain-db"
+          KEYCHAIN_PASSWORD="$(openssl rand -base64 32)"
+
+          echo "$P12_BASE64" | base64 --decode > "$CERT_PATH"
+
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security import "$CERT_PATH" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+          security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security list-keychains -d user -s "$KEYCHAIN_PATH" login.keychain-db
+
+      - name: Build archive
+        run: |
+          xcodebuild \
+            -scheme "$SCHEME" \
+            -configuration "$CONFIGURATION" \
+            -archivePath "$RUNNER_TEMP/Gitbox.xcarchive" \
+            DEVELOPMENT_TEAM="$TEAM_ID" \
+            CODE_SIGN_IDENTITY="Developer ID Application" \
+            CODE_SIGN_STYLE=Manual \
+            archive
+
+      - name: Export app
+        run: |
+          xcodebuild \
+            -exportArchive \
+            -archivePath "$RUNNER_TEMP/Gitbox.xcarchive" \
+            -exportPath "$RUNNER_TEMP/export" \
+            -exportOptionsPlist scripts/export-options.plist
+
+      - name: Notarise
+        env:
+          API_KEY_ID: ${{ secrets.APPSTORE_CONNECT_API_KEY_ID }}
+          API_ISSUER_ID: ${{ secrets.APPSTORE_CONNECT_API_ISSUER_ID }}
+          API_KEY_BASE64: ${{ secrets.APPSTORE_CONNECT_API_KEY }}
+        run: |
+          # Write API key to expected location
+          mkdir -p ~/private_keys
+          echo "$API_KEY_BASE64" | base64 --decode > ~/private_keys/AuthKey_${API_KEY_ID}.p8
+
+          # Create zip for notarisation submission
+          ditto -c -k --keepParent "$RUNNER_TEMP/export/Gitbox.app" "$RUNNER_TEMP/Gitbox-notarize.zip"
+
+          # Submit and wait
+          xcrun notarytool submit "$RUNNER_TEMP/Gitbox-notarize.zip" \
+            --key ~/private_keys/AuthKey_${API_KEY_ID}.p8 \
+            --key-id "$API_KEY_ID" \
+            --issuer "$API_ISSUER_ID" \
+            --wait
+
+          # Staple the ticket to the app
+          xcrun stapler staple "$RUNNER_TEMP/export/Gitbox.app"
+
+      - name: Create release zip
+        run: |
+          cd "$RUNNER_TEMP/export"
+          ditto -c -k --keepParent Gitbox.app "Gitbox-${{ inputs.version }}.zip"
+
+      - name: Generate Sparkle signature and appcast
+        env:
+          SPARKLE_KEY: ${{ secrets.SPARKLE_EDDSA_KEY }}
+        run: |
+          ZIP_PATH="$RUNNER_TEMP/export/Gitbox-${{ inputs.version }}.zip"
+          DOWNLOAD_URL="https://github.com/${{ github.repository }}/releases/download/v${{ inputs.version }}/Gitbox-${{ inputs.version }}.zip"
+
+          # Write key to temp file
+          KEY_FILE="$RUNNER_TEMP/sparkle_eddsa.key"
+          echo "$SPARKLE_KEY" > "$KEY_FILE"
+
+          # Generate EdDSA signature
+          SIGNATURE=$(bin/sign_update -f "$KEY_FILE" "$ZIP_PATH" 2>/dev/null || echo "")
+
+          if [ -z "$SIGNATURE" ]; then
+            echo "::warning::Could not generate Sparkle signature. Appcast will be missing edSignature."
+            SIGNATURE="SIGNATURE_PLACEHOLDER"
+          fi
+
+          # Generate appcast XML
+          scripts/generate-appcast-entry.sh \
+            "${{ inputs.version }}" \
+            "$ZIP_PATH" \
+            "$DOWNLOAD_URL" \
+            "$SIGNATURE" \
+            > "$RUNNER_TEMP/export/appcast.xml"
+
+          rm -f "$KEY_FILE"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "v${{ inputs.version }}" \
+            --title "Gitbox ${{ inputs.version }}" \
+            --generate-notes \
+            "$RUNNER_TEMP/export/Gitbox-${{ inputs.version }}.zip" \
+            "$RUNNER_TEMP/export/appcast.xml"
+
+      - name: Cleanup keychain
+        if: always()
+        run: |
+          security delete-keychain "$RUNNER_TEMP/build.keychain-db" 2>/dev/null || true

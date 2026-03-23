@@ -241,7 +241,8 @@
 	removeMenuItem(self.checkForUpdatesMenuItem);
 #endif
 	
-	self.licenseTextView.string = [NSString stringWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"GitboxLicense" ofType:@"txt"] encoding:NSUTF8StringEncoding error:NULL];
+	// @todo: jeff
+//	self.licenseTextView.string = [NSString stringWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"GitboxLicense" ofType:@"txt"] encoding:NSUTF8StringEncoding error:NULL];
 	
 #if GITBOX_APP_STORE
 	NSArray* preferencesControllers = [NSArray arrayWithObjects:

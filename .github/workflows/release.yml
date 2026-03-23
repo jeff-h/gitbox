@@ -2,6 +2,7 @@ name: Build & Release
 
 on:
   workflow_dispatch:
+    branches: [release]
     inputs:
       version:
         description: 'Version number (e.g. 1.0.0)'

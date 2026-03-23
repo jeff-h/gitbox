@@ -21,10 +21,10 @@ class GBBadgeView: NSView {
         didSet { needsDisplay = true }
     }
 
-    private static let font = NSFont.boldSystemFont(ofSize: 11)
+    private static let font = NSFont.monospacedDigitSystemFont(ofSize: 11, weight: .semibold)
     private static let minWidth: CGFloat = 20
-    private static let cornerRadius: CGFloat = 8
-    private static let horizontalPadding: CGFloat = 4
+    private static let horizontalPadding: CGFloat = 7
+    private static let badgeHeight: CGFloat = 18
 
     // MARK: - Layout
 
@@ -40,19 +40,26 @@ class GBBadgeView: NSView {
     override func draw(_ dirtyRect: NSRect) {
         guard count > 0 else { return }
 
-        let rect = bounds
+        // Centre the pill vertically within bounds
+        let pillRect = NSRect(
+            x: 0,
+            y: round((bounds.height - Self.badgeHeight) / 2),
+            width: bounds.width,
+            height: Self.badgeHeight
+        )
+        let cornerRadius = Self.badgeHeight / 2
 
-        // Background pill
-        let path = NSBezierPath(roundedRect: rect, xRadius: Self.cornerRadius, yRadius: Self.cornerRadius)
+        // Background pill — fully rounded capsule
+        let path = NSBezierPath(roundedRect: pillRect, xRadius: cornerRadius, yRadius: cornerRadius)
         fillColor.setFill()
         path.fill()
 
-        // Centred text
+        // Centred text within the pill
         let attrs = textAttributes
         let textSize = badgeString.size(withAttributes: attrs)
         let textRect = NSRect(
-            x: round((rect.width - textSize.width) / 2),
-            y: round((rect.height - textSize.height) / 2),
+            x: round((pillRect.width - textSize.width) / 2),
+            y: pillRect.origin.y + round((pillRect.height - textSize.height) / 2),
             width: textSize.width,
             height: textSize.height
         )
@@ -61,28 +68,23 @@ class GBBadgeView: NSView {
 
     // MARK: - Colours
 
-    /// Matches the original GBSidebarCell colour scheme exactly.
+    /// Uses system colours so badges look correct across light/dark mode
+    /// and adapt properly when selected.
     private var fillColor: NSColor {
         if isEmphasised {
             return .white
         }
         if isWindowForeground {
-            return NSColor(calibratedHue: 217.0 / 360.0, saturation: 0.27, brightness: 0.79, alpha: 1.0)
+            return .controlAccentColor
         }
-        return NSColor(calibratedHue: 0, saturation: 0, brightness: 0.67, alpha: 0.8)
+        return .tertiaryLabelColor
     }
 
     private var textColor: NSColor {
         if isEmphasised {
-            if isWindowForeground {
-                return NSColor(calibratedHue: 217.0 / 360.0, saturation: 0.40, brightness: 0.70, alpha: 1.0)
-            }
-            return .gray
+            return .controlAccentColor
         }
-        if isWindowForeground {
-            return .white
-        }
-        return NSColor(calibratedHue: 0, saturation: 0, brightness: 0.50, alpha: 0.8)
+        return .white
     }
 
     private var textAttributes: [NSAttributedString.Key: Any] {

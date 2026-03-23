@@ -575,7 +575,7 @@
 		
 		if (!isRelaunched && 
 			[task.executableName isEqualToString:@"opendiff"] && 
-			([task.UTF8ErrorAndOutput rangeOfString:@"Error:"].length > 0 ||
+			([task.UTF8ErrorAndOutput rangeOfString:@"Error:" options:NSCaseInsensitiveSearch].length > 0 ||
 			 [task.UTF8ErrorAndOutput rangeOfString:@"launch path not accessible"].length > 0 ||
 			 [task.UTF8ErrorAndOutput rangeOfString:@"exception"].length > 0))
 		{

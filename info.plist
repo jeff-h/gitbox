@@ -88,5 +88,7 @@
 	<string>${SPARKLE_FEED_URL}</string>
 	<key>SUPublicDSAKeyFile</key>
 	<string>sparkle_dsa_pub.pem</string>
+	<key>SUPublicEDKey</key>
+	<string>s+AlkZGpuOtiXGZSBsdevLvA951ZksqsSI1rGHrrPB8=</string>
 </dict>
 </plist>

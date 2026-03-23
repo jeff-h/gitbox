@@ -499,10 +499,6 @@
 		20C8972312B89BC2002F600F /* OATextFieldAndView.m in Sources */ = {isa = PBXBuildFile; fileRef = 20C8972112B89BC2002F600F /* OATextFieldAndView.m */; };
 		20C899B612B95DDF002F600F /* OANonScrollingScrollView.m in Sources */ = {isa = PBXBuildFile; fileRef = 20C899B512B95DDF002F600F /* OANonScrollingScrollView.m */; };
 		20C899B712B95DDF002F600F /* OANonScrollingScrollView.m in Sources */ = {isa = PBXBuildFile; fileRef = 20C899B512B95DDF002F600F /* OANonScrollingScrollView.m */; };
-		20C936071609242600B8E985 /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 20C935FE160923CF00B8E985 /* libcrypto.a */; };
-		20C936081609242600B8E985 /* libssl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 20C935FF160923CF00B8E985 /* libssl.a */; };
-		20C936091609242600B8E985 /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 20C935FE160923CF00B8E985 /* libcrypto.a */; };
-		20C9360A1609242600B8E985 /* libssl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 20C935FF160923CF00B8E985 /* libssl.a */; };
 		20CBF1CE13D61EB80071E79D /* libgit2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 20CBF1CD13D61EB80071E79D /* libgit2.a */; };
 		20CE6D65138824D2001D9707 /* GBHistoryTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 20CE6D64138824D2001D9707 /* GBHistoryTableView.m */; };
 		20CE6D66138824D2001D9707 /* GBHistoryTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 20CE6D64138824D2001D9707 /* GBHistoryTableView.m */; };
@@ -1056,9 +1052,7 @@
 				20EF8C4812E6605D00F3438A /* Quartz.framework in Frameworks */,
 				209CE44513D61FD0009E85A2 /* libz.dylib in Frameworks */,
 				209CE4C513D61FF2009E85A2 /* libgit2.a in Frameworks */,
-				20C936071609242600B8E985 /* libcrypto.a in Frameworks */,
-				20C936081609242600B8E985 /* libssl.a in Frameworks */,
-			);
+							);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		8D15AC330486D014006FF6A4 /* Frameworks */ = {
@@ -1075,9 +1069,7 @@
 				20EF88D912E34F9300F3438A /* QuickLook.framework in Frameworks */,
 				20CBF1CE13D61EB80071E79D /* libgit2.a in Frameworks */,
 				209CE44413D61FAC009E85A2 /* libz.dylib in Frameworks */,
-				20C936091609242600B8E985 /* libcrypto.a in Frameworks */,
-				20C9360A1609242600B8E985 /* libssl.a in Frameworks */,
-			);
+							);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
@@ -2664,25 +2656,23 @@
 			buildSettings = {
 				APP_VERSION = "2013-10-28";
 				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer: Oleg Andreev (9F23AVDPMZ)";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_VERSION = "";
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				HEADER_SEARCH_PATHS = (
-					"$(SRCROOT)/libgit2/include",
-					"$(SRCROOT)/openssl/include",
-				);
+				HEADER_SEARCH_PATHS = "$(SRCROOT)/libgit2/include";
 				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/libgit2/build";
-				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_CFLAGS = "-DDEBUG=1";
-				OTHER_LDFLAGS = "-lcrypto";
+				OTHER_LDFLAGS = "";
 				PROVISIONING_PROFILE = "903A155A-8E32-4C2E-A88C-EBECA6C54744";
 				SDKROOT = macosx;
 				SPARKLE_FEED_URL = "http://gitboxapp.com/updates-beta.xml";
-				VALID_ARCHS = x86_64;
+				VALID_ARCHS = "arm64 x86_64";
 			};
 			name = Debug;
 		};
@@ -2691,24 +2681,22 @@
 			buildSettings = {
 				APP_VERSION = 1.6.4;
 				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer: Oleg Andreev (9F23AVDPMZ)";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_VERSION = "";
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				HEADER_SEARCH_PATHS = (
-					"$(SRCROOT)/libgit2/include",
-					"$(SRCROOT)/openssl/include",
-				);
+				HEADER_SEARCH_PATHS = "$(SRCROOT)/libgit2/include";
 				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/libgit2/build";
-				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_CFLAGS = "";
-				OTHER_LDFLAGS = "-lcrypto";
+				OTHER_LDFLAGS = "";
 				PROVISIONING_PROFILE = "7B4612BC-080E-4DF6-AF28-41D93A00F71B";
 				SDKROOT = macosx;
 				SPARKLE_FEED_URL = "http://gitboxapp.com/updates.xml";
-				VALID_ARCHS = x86_64;
+				VALID_ARCHS = "arm64 x86_64";
 			};
 			name = Release;
 		};

@@ -3,7 +3,6 @@
 
 @interface GBSidebarItem ()
 @property(nonatomic, copy, readwrite) NSString* UID;
-@property(nonatomic, strong) NSMutableDictionary* viewsDictionary;
 @end
 
 @implementation GBSidebarItem {
@@ -17,9 +16,7 @@
 @synthesize title;
 @synthesize tooltip;
 @synthesize badgeInteger;
-@synthesize cell;
 @synthesize menu;
-@synthesize viewsDictionary=_viewsDictionary;
 @synthesize section;
 @synthesize spinning;
 @synthesize progress;
@@ -30,21 +27,10 @@
 @synthesize collapsed;
 @dynamic    expanded;
 
-- (void) dealloc
-{
-	//NSLog(@"GBSidebarItem#dealloc");
-	for (NSString* aKey in _viewsDictionary)
-	{
-		//NSLog(@"GBSidebarItem#dealloc: removing view %@", aKey);
-		[[_viewsDictionary objectForKey:aKey] removeFromSuperview];
-	}
-}
-
 - (id) init
 {
 	if ((self = [super init]))
 	{
-		self.viewsDictionary = [NSMutableDictionary dictionary];
 	}
 	return self;
 }
@@ -57,11 +43,10 @@
 
 - (NSString*) description
 {
-	return [NSString stringWithFormat:@"<%@:%p title=%@ cell=%@ expanded=%d object=%@>",
+	return [NSString stringWithFormat:@"<%@:%p title=%@ expanded=%d object=%@>",
 			[self class],
 			self,
 			[self title],
-			self.cell,
 			(int)self.isExpanded,
 			self.object
 			];
@@ -222,39 +207,6 @@
 	}
 }
 
-- (NSView*) viewForKey:(NSString*)aKey
-{
-	return [_viewsDictionary objectForKey:aKey];
-}
-
-- (void) setView:(NSView*)aView forKey:(NSString*)aKey
-{
-	NSView* oldView = [_viewsDictionary objectForKey:aKey];
-	
-	if (oldView == aView) return;
-	
-	GB_RETAIN_AUTORELEASE(oldView);
-	
-	[oldView removeFromSuperview];
-	if (aView)
-	{
-		[_viewsDictionary setObject:aView forKey:aKey];
-	}
-	else
-	{
-		[_viewsDictionary removeObjectForKey:aKey];
-	}
-}
-
-- (void) removeAllViews
-{
-	for (NSString* aKey in _viewsDictionary)
-	{
-		//NSLog(@"GBSidebarItem#dealloc: removing view %@", aKey);
-		[[_viewsDictionary objectForKey:aKey] removeFromSuperview];
-	}
-	[_viewsDictionary removeAllObjects];
-}
 
 
 
@@ -348,16 +300,6 @@
 {
 	if (collapsed == value) return;
 	collapsed = value;
-	if (collapsed)
-	{
-		[self enumerateChildrenUsingBlock:^(GBSidebarItem* obj, NSUInteger idx, BOOL* stop) {
-			for (NSString* aKey in obj.viewsDictionary)
-			{
-				//NSLog(@"GBSidebarItem#setCollapsed: removing view %@ from child #%d %@", aKey, (int)idx, obj);
-				[[obj.viewsDictionary objectForKey:aKey] removeFromSuperview];
-			}
-		}];
-	}
 }
 
 - (NSDragOperation) dragOperationForURLs:(NSArray*)URLs outlineView:(NSOutlineView*)anOutlineView
@@ -428,7 +370,6 @@
 - (void) stop
 {
 	stopped = YES;
-	[self removeAllViews];
 }
 
 - (BOOL) isStopped

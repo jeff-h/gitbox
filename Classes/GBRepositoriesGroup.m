@@ -3,7 +3,6 @@
 #import "GBRepositoriesGroup.h"
 #import "GBRepositoriesController.h"
 #import "GBSidebarItem.h"
-#import "GBSidebarCell.h"
 #import "GBRepository.h"
 
 @interface GBRepositoriesGroup ()
@@ -33,7 +32,6 @@
     self.sidebarItem.draggable = YES;
     self.sidebarItem.editable = YES;
     self.sidebarItem.image = [NSImage imageNamed:@"GBSidebarGroupIcon"];
-    self.sidebarItem.cell = [[GBSidebarCell alloc] initWithItem:self.sidebarItem];
   }
   return self;
 }

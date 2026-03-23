@@ -2,7 +2,8 @@
 #import "GBRootController.h"
 #import "GBRepository.h"
 #import "GBSidebarItem.h"
-#import "GBSidebarCell.h"
+#import "GBSidebarOutlineView.h"
+#import "gitbox-Swift.h"
 
 #import "OAFastJumpController.h"
 #import "NSFileManager+OAFileManagerHelpers.h"
@@ -273,12 +274,6 @@
 	return [item childAtIndex:index];
 }
 
-- (id)outlineView:(NSOutlineView*)anOutlineView objectValueForTableColumn:(NSTableColumn*)tableColumn byItem:(GBSidebarItem*)item
-{
-	item.sidebarController = self;
-	return item.title;
-}
-
 - (BOOL)outlineView:(NSOutlineView*)anOutlineView isItemExpandable:(GBSidebarItem*)item
 {
 	if (item == nil) return NO;
@@ -287,18 +282,11 @@
 
 
 
-// Editing
+// Editing — view-based outline uses the text field directly
 
 - (BOOL)outlineView:(NSOutlineView*)anOutlineView shouldEditTableColumn:(NSTableColumn*)tableColumn item:(GBSidebarItem*)item
 {
 	return [item isEditable];
-}
-
-- (void)outlineView:(NSOutlineView *)anOutlineView setObjectValue:(id)object forTableColumn:(NSTableColumn *)tableColumn byItem:(GBSidebarItem*)item
-{
-	if ([object respondsToSelector:@selector(string)]) object = [object string];
-	object = [NSString stringWithFormat:@"%@", object];
-	[item setStringValue:object];
 }
 
 - (BOOL)control:(NSControl *)control textShouldBeginEditing:(NSText *)fieldEditor
@@ -353,59 +341,37 @@
 	//}];
 }
 
-- (NSCell *)outlineView:(NSOutlineView *)outlineView dataCellForTableColumn:(NSTableColumn *)tableColumn item:(GBSidebarItem*)item
+- (NSView *)outlineView:(NSOutlineView *)anOutlineView viewForTableColumn:(NSTableColumn *)tableColumn item:(GBSidebarItem*)item
 {
-	// tableColumn == nil means the outlineView needs a separator cell
-	if (!tableColumn) return nil;
-	
 	if (!item) item = self.rootController.sidebarItem;
-	
-	NSCell* cell = item.cell;
-	
-	if (!cell)
-	{
-		cell = [tableColumn dataCell];
-	}
-	
-	//  [cell setMenu:item.menu];
-	return cell;
-}
+	item.sidebarController = self;
 
-- (void)outlineView:(NSOutlineView*)anOutlineView willDisplayCell:(NSCell*)cell forTableColumn:(NSTableColumn*)tableColumn item:(GBSidebarItem*)item
-{
+	GBSidebarCellView *cellView = [anOutlineView makeViewWithIdentifier:[GBSidebarCellView cellIdentifier] owner:self];
+	if (!cellView)
+	{
+		cellView = [[GBSidebarCellView alloc] initWithFrame:NSMakeRect(0, 0, 200, [GBSidebarCellView rowHeight])];
+		cellView.identifier = [GBSidebarCellView cellIdentifier];
+	}
+
+	// Set drag state so badges hide during drag image generation
+	cellView.isDragging = [(GBSidebarOutlineView *)anOutlineView preparesImageForDragging];
+
+	[cellView configureWith:item];
+
+	// Context menu
 	NSMenu* menu = item.menu;
 	if (menu)
 	{
 		menu.delegate = self;
-		[cell setMenu:menu];
+		cellView.menu = menu;
 	}
+
+	return cellView;
 }
 
-- (CGFloat)outlineView:(NSOutlineView*)outlineView heightOfRowByItem:(GBSidebarItem*)item
+- (CGFloat)outlineView:(NSOutlineView*)anOutlineView heightOfRowByItem:(GBSidebarItem*)item
 {
-	if (!item) item = self.rootController.sidebarItem;
-	NSCell* cell = item.cell;
-	
-	if (cell && [cell respondsToSelector:@selector(cellHeight)])
-	{
-		return [(id)cell cellHeight];
-	}
-	
-	return 21.0;
-}
-
-- (NSString *)outlineView:(NSOutlineView *)outlineView
-           toolTipForCell:(NSCell *)cell
-                     rect:(NSRectPointer)rect
-              tableColumn:(NSTableColumn *)tc
-                     item:(GBSidebarItem*)item
-            mouseLocation:(NSPoint)mouseLocation
-{
-	if (!item) item = self.rootController.sidebarItem;
-	
-	NSString* tooltip = item.tooltip;
-	if (!tooltip) return @"";  
-	return tooltip;
+	return [GBSidebarCellView rowHeight];
 }
 
 

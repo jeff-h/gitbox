@@ -4,7 +4,6 @@
 #define GBSidebarItemPasteboardType @"com.oleganza.gitbox.GBSidebarItemPasteboardType"
 
 @class GBSidebarController;
-@class GBSidebarCell;
 
 @interface GBSidebarItem : NSResponder<NSPasteboardWriting>
 
@@ -21,7 +20,6 @@
 @property(nonatomic, assign) NSUInteger badgeInteger;
 - (NSUInteger) subtreeBadgeInteger;
 - (NSUInteger) visibleBadgeInteger;
-@property(nonatomic, strong) GBSidebarCell* cell;
 
 @property(nonatomic, assign, getter=isSection) BOOL section;
 @property(nonatomic, assign, getter=isSpinning)   BOOL spinning;
@@ -31,9 +29,6 @@
 - (double) visibleProgress; // returns average progress of all children if all of them have progress > 0 and < 100
 
 - (BOOL) isStopped;
-- (NSView*) viewForKey:(NSString*)aKey;
-- (void) setView:(NSView*)aView forKey:(NSString*)aKey;
-- (void) removeAllViews;
 
 // Behaviour
 

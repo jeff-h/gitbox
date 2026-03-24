@@ -85,15 +85,38 @@ jobs:
             mkdir -p "$EXTRACT_DIR"
             tar -xf "$GIT_TAR" -C "$EXTRACT_DIR"
 
-            # Sign all Mach-O binaries inside the extracted bundle
-            find "$EXTRACT_DIR" -type f | while read -r binary; do
+            # Build a map of inode → first-seen path for Mach-O files.
+            # codesign replaces files, destroying hardlinks. We sign one
+            # file per unique inode, then re-hardlink the rest afterwards.
+            declare -A INODE_MAP
+            HARDLINK_PAIRS=()
+
+            while IFS= read -r binary; do
               if file "$binary" | grep -qE "Mach-O"; then
-                echo "Signing: ${binary#$EXTRACT_DIR/}"
-                codesign --force --options runtime --timestamp --sign "$IDENTITY" "$binary"
+                inode=$(stat -f '%i' "$binary")
+                if [ -z "${INODE_MAP[$inode]:-}" ]; then
+                  # First time seeing this inode — sign it
+                  INODE_MAP[$inode]="$binary"
+                  echo "Signing: ${binary#$EXTRACT_DIR/}"
+                  codesign --force --options runtime --timestamp --sign "$IDENTITY" "$binary"
+                else
+                  # Duplicate inode — record for re-hardlinking after signing
+                  HARDLINK_PAIRS+=("${INODE_MAP[$inode]}|$binary")
+                fi
               fi
+            done < <(find "$EXTRACT_DIR" -type f)
+
+            # Restore hardlinks (point duplicates back at the signed original)
+            for pair in "${HARDLINK_PAIRS[@]}"; do
+              src="${pair%%|*}"
+              dst="${pair##*|}"
+              rm "$dst"
+              ln "$src" "$dst"
             done
 
-            # Re-tar the signed bundle
+            echo "Signed ${#INODE_MAP[@]} unique binaries, restored ${#HARDLINK_PAIRS[@]} hardlinks"
+
+            # Re-tar the signed bundle (hardlinks preserved)
             echo "Re-creating tar with signed binaries"
             tar -cf "$GIT_TAR" -C "$EXTRACT_DIR" .
             rm -rf "$EXTRACT_DIR"

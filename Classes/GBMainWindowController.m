@@ -16,7 +16,9 @@
 #import "NSObject+OADispatchItemValidation.h"
 #import "NSObject+OASelectorNotifications.h"
 
-#import "Gitbox-Swift.h"
+// Note: we intentionally do NOT #import "Gitbox-Swift.h" here.
+// Using NSClassFromString ensures the runtime resolves GBColumnWindowController
+// without giving the linker a compile-time reference it can strip via LTO.
 
 
 @interface GBMainWindowController ()
@@ -72,11 +74,12 @@
 	static id volatile instance = nil;
 	static dispatch_once_t once = 0;
 	dispatch_once( &once, ^{
-		// Use a volatile class pointer to prevent the compiler/linker from
-		// devirtualizing this to GBMainWindowController. Without volatile,
-		// Xcode 16's LTO strips the class ref entirely in archive builds.
-		Class volatile columnClass = [GBColumnWindowController class];
-		instance = [[columnClass alloc] initWithWindowNibName:@"GBMainWindowController"];
+		Class cls = NSClassFromString(@"GBColumnWindowController");
+		if (!cls) {
+			NSLog(@"GBColumnWindowController not found — falling back to GBMainWindowController");
+			cls = self;
+		}
+		instance = [[cls alloc] initWithWindowNibName:@"GBMainWindowController"];
 	});
 	return instance;
 }

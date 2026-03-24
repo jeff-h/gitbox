@@ -85,36 +85,47 @@ jobs:
             mkdir -p "$EXTRACT_DIR"
             tar -xf "$GIT_TAR" -C "$EXTRACT_DIR"
 
-            # Build a map of inode → first-seen path for Mach-O files.
             # codesign replaces files, destroying hardlinks. We sign one
             # file per unique inode, then re-hardlink the rest afterwards.
-            declare -A INODE_MAP
-            HARDLINK_PAIRS=()
+            # Uses temp files instead of bash 4 associative arrays (macOS
+            # ships bash 3).
+            INODE_MAP_DIR="$RUNNER_TEMP/inode-map"
+            mkdir -p "$INODE_MAP_DIR"
+            SIGNED=0
+            RELINKED=0
 
-            while IFS= read -r binary; do
+            find "$EXTRACT_DIR" -type f | while IFS= read -r binary; do
               if file "$binary" | grep -qE "Mach-O"; then
                 inode=$(stat -f '%i' "$binary")
-                if [ -z "${INODE_MAP[$inode]:-}" ]; then
+                if [ ! -f "$INODE_MAP_DIR/$inode" ]; then
                   # First time seeing this inode — sign it
-                  INODE_MAP[$inode]="$binary"
+                  echo "$binary" > "$INODE_MAP_DIR/$inode"
                   echo "Signing: ${binary#$EXTRACT_DIR/}"
                   codesign --force --options runtime --timestamp --sign "$IDENTITY" "$binary"
                 else
-                  # Duplicate inode — record for re-hardlinking after signing
-                  HARDLINK_PAIRS+=("${INODE_MAP[$inode]}|$binary")
+                  # Duplicate inode — record for re-hardlinking
+                  echo "$binary" >> "$INODE_MAP_DIR/${inode}.dups"
                 fi
               fi
-            done < <(find "$EXTRACT_DIR" -type f)
-
-            # Restore hardlinks (point duplicates back at the signed original)
-            for pair in "${HARDLINK_PAIRS[@]}"; do
-              src="${pair%%|*}"
-              dst="${pair##*|}"
-              rm "$dst"
-              ln "$src" "$dst"
             done
 
-            echo "Signed ${#INODE_MAP[@]} unique binaries, restored ${#HARDLINK_PAIRS[@]} hardlinks"
+            # Restore hardlinks (point duplicates back at the signed original)
+            for dupfile in "$INODE_MAP_DIR"/*.dups; do
+              [ -f "$dupfile" ] || continue
+              inode=$(basename "$dupfile" .dups)
+              src=$(cat "$INODE_MAP_DIR/$inode")
+              while IFS= read -r dst; do
+                rm "$dst"
+                ln "$src" "$dst"
+                RELINKED=$((RELINKED + 1))
+              done < "$dupfile"
+              SIGNED=$((SIGNED + 1))
+            done
+            # Count inodes with no dups too
+            SIGNED=$(ls "$INODE_MAP_DIR" | grep -cv '\.dups$' || true)
+
+            rm -rf "$INODE_MAP_DIR"
+            echo "Signed $SIGNED unique binaries, restored $RELINKED hardlinks"
 
             # Re-tar the signed bundle (hardlinks preserved)
             echo "Re-creating tar with signed binaries"

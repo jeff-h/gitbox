@@ -39,6 +39,7 @@ import AppKit
         guard let window = window else { return }
 
         // --- Modern window styling ---
+        NSLog("  window=\(window), contentView=\(String(describing: window.contentView)), contentViewController=\(String(describing: window.contentViewController))")
         window.styleMask.insert(.fullSizeContentView)
         window.titlebarAppearsTransparent = true
         window.titleVisibility = .hidden
@@ -78,6 +79,7 @@ import AppKit
         // Replace the XIB content (NSBox + old NSSplitView) with our
         // NSSplitViewController. The toolbar is window-level so it survives.
         window.contentViewController = splitVC
+        NSLog("  after contentViewController set: contentView=\(String(describing: window.contentView))")
 
         // Point the inherited splitView property at the new split view.
         // This is critical: the superclass's private `sidebarView` and
@@ -88,7 +90,7 @@ import AppKit
 
         // --- Replicate essential setup from super's windowDidLoad ---
 
-        window.title = NSLocalizedString("No selection", comment: "Window")
+        window.title = "COLUMN LAYOUT ACTIVE"  // DEBUG: visible proof this code ran
         window.representedURL = nil
 
         sidebarController.rootController = rootController

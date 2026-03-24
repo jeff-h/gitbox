@@ -16,6 +16,8 @@
 #import "NSObject+OADispatchItemValidation.h"
 #import "NSObject+OASelectorNotifications.h"
 
+#import "Gitbox-Swift.h"
+
 
 @interface GBMainWindowController ()
 @property(nonatomic, strong) OAFastJumpController* jumpController;
@@ -70,14 +72,7 @@
 	static id volatile instance = nil;
 	static dispatch_once_t once = 0;
 	dispatch_once( &once, ^{
-		// Use the modern NSSplitViewController-based subclass if available.
-		// NSClassFromString avoids a compile-time dependency on the Swift header.
-		Class columnClass = NSClassFromString(@"GBColumnWindowController");
-		if (columnClass) {
-			instance = [[columnClass alloc] initWithWindowNibName:@"GBMainWindowController"];
-		} else {
-			instance = [[self alloc] initWithWindowNibName:@"GBMainWindowController"];
-		}
+		instance = [[GBColumnWindowController alloc] initWithWindowNibName:@"GBMainWindowController"];
 	});
 	return instance;
 }

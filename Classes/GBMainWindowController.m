@@ -72,7 +72,11 @@
 	static id volatile instance = nil;
 	static dispatch_once_t once = 0;
 	dispatch_once( &once, ^{
-		instance = [[GBColumnWindowController alloc] initWithWindowNibName:@"GBMainWindowController"];
+		// Use a volatile class pointer to prevent the compiler/linker from
+		// devirtualizing this to GBMainWindowController. Without volatile,
+		// Xcode 16's LTO strips the class ref entirely in archive builds.
+		Class volatile columnClass = [GBColumnWindowController class];
+		instance = [[columnClass alloc] initWithWindowNibName:@"GBMainWindowController"];
 	});
 	return instance;
 }

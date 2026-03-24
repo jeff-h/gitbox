@@ -1,4 +1,7 @@
 import AppKit
+import os.log
+
+private let log = OSLog(subsystem: "com.oleganza.gitbox", category: "ColumnWindow")
 
 /// Modern NSSplitViewController-based window controller that replaces the
 /// XIB-based NSSplitView in GBMainWindowController with a proper
@@ -30,6 +33,8 @@ import AppKit
     // MARK: - Window lifecycle
 
     override func windowDidLoad() {
+        os_log("windowDidLoad START", log: log, type: .default)
+
         // We intentionally do NOT call super. The superclass windowDidLoad
         // sets up the old XIB-based split view (loadInView:, etc.) which
         // we're replacing entirely. We replicate the essential parts here.
@@ -111,6 +116,7 @@ import AppKit
         }
 
         updateToolbarAlignment()
+        os_log("windowDidLoad END", log: log, type: .default)
     }
 
     // MARK: - Toolbar alignment

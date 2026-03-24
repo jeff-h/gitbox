@@ -80,6 +80,7 @@
 			cls = self;
 		}
 		instance = [[cls alloc] initWithWindowNibName:@"GBMainWindowController"];
+		NSLog(@"+[GBMainWindowController instance]: created %@ (class=%@)", instance, NSStringFromClass([instance class]));
 	});
 	return instance;
 }

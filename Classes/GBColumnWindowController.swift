@@ -1,7 +1,4 @@
 import AppKit
-import os.log
-
-private let log = OSLog(subsystem: "com.oleganza.gitbox", category: "ColumnWindow")
 
 /// Modern NSSplitViewController-based window controller that replaces the
 /// XIB-based NSSplitView in GBMainWindowController with a proper
@@ -33,7 +30,7 @@ private let log = OSLog(subsystem: "com.oleganza.gitbox", category: "ColumnWindo
     // MARK: - Window lifecycle
 
     override func windowDidLoad() {
-        os_log("windowDidLoad START", log: log, type: .default)
+        NSLog("GBColumnWindowController.windowDidLoad START")
 
         // We intentionally do NOT call super. The superclass windowDidLoad
         // sets up the old XIB-based split view (loadInView:, etc.) which
@@ -116,7 +113,7 @@ private let log = OSLog(subsystem: "com.oleganza.gitbox", category: "ColumnWindo
         }
 
         updateToolbarAlignment()
-        os_log("windowDidLoad END", log: log, type: .default)
+        NSLog("GBColumnWindowController.windowDidLoad END")
     }
 
     // MARK: - Toolbar alignment

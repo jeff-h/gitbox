@@ -3,6 +3,9 @@
 @class GBToolbarController;
 @class GBSidebarController;
 @class GBWelcomeController;
+@class GBPlaceholderViewController;
+
+#import "GBMainWindowItem.h"
 
 @interface GBMainWindowController : NSWindowController<NSSplitViewDelegate>
 
@@ -15,6 +18,9 @@
 @property(nonatomic, strong, readonly) OABlockQueue* sheetQueue;
 
 @property(nonatomic, strong) IBOutlet NSSplitView* splitView;
+@property(nonatomic, strong) id<GBMainWindowItem> selectedWindowItem;
+@property(nonatomic, strong) GBToolbarController* defaultToolbarController;
+@property(nonatomic, strong) GBPlaceholderViewController* defaultDetailViewController;
 
 + (GBMainWindowController*) instance;
 
@@ -31,6 +37,9 @@
 - (void) sheetQueueAddBlock:(void(^)())aBlock;
 - (void) sheetQueueEndBlock;
 - (void) criticalConfirmationWithMessage:(NSString*)msg description:(NSString*)desc ok:(NSString*)okOrNil completion:(void(^)(BOOL))completion;
+
+// For subclass use
+- (void) updateToolbarAlignment;
 
 @end
 

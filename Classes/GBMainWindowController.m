@@ -16,10 +16,8 @@
 #import "NSObject+OADispatchItemValidation.h"
 #import "NSObject+OASelectorNotifications.h"
 
+
 @interface GBMainWindowController ()
-@property(nonatomic, strong) GBToolbarController* defaultToolbarController;
-@property(nonatomic, strong) GBPlaceholderViewController* defaultDetailViewController;
-@property(nonatomic, strong) id<GBMainWindowItem> selectedWindowItem;
 @property(nonatomic, strong) OAFastJumpController* jumpController;
 @property(nonatomic, strong, readwrite) OABlockQueue* sheetQueue;
 @property(nonatomic, strong) NSWindow* currentSheet;
@@ -71,7 +69,16 @@
 {
 	static id volatile instance = nil;
 	static dispatch_once_t once = 0;
-	dispatch_once( &once, ^{ instance = [[self alloc] initWithWindowNibName:@"GBMainWindowController"]; });
+	dispatch_once( &once, ^{
+		// Use the modern NSSplitViewController-based subclass if available.
+		// NSClassFromString avoids a compile-time dependency on the Swift header.
+		Class columnClass = NSClassFromString(@"GBColumnWindowController");
+		if (columnClass) {
+			instance = [[columnClass alloc] initWithWindowNibName:@"GBMainWindowController"];
+		} else {
+			instance = [[self alloc] initWithWindowNibName:@"GBMainWindowController"];
+		}
+	});
 	return instance;
 }
 

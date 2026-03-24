@@ -10,6 +10,7 @@
 #import <AppKit/AppKit.h>
 
 // Import main application classes
+#import "GBPlaceholderViewController.h"
 #import "GBMainWindowController.h"
 #import "GBRootController.h"
 #import "GBSidebarController.h"
@@ -22,6 +23,7 @@
 #import "GBChange.h"
 
 // Import utility classes
+#import "NSView+OAViewHelpers.h"
 #import "NSObject+OASelectorNotifications.h"
 #import "NSArray+OAArrayHelpers.h"
 #import "NSString+OAStringHelpers.h"

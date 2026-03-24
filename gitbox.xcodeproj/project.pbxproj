@@ -523,6 +523,8 @@
 		6FAD35342F7154D300C09C6B /* GBSidebarCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FAD35322F7154D300C09C6B /* GBSidebarCellView.swift */; };
 		6FAD35382F71550E00C09C6B /* GBBadgeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FAD35372F71550E00C09C6B /* GBBadgeView.swift */; };
 		6FAD35392F71550E00C09C6B /* GBBadgeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FAD35372F71550E00C09C6B /* GBBadgeView.swift */; };
+		6FCC000B2F8A000100C09C6B /* GBColumnWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FCC000A2F8A000100C09C6B /* GBColumnWindowController.swift */; };
+		6FCC000C2F8A000100C09C6B /* GBColumnWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FCC000A2F8A000100C09C6B /* GBColumnWindowController.swift */; };
 		70865D2B12D25F5F00033683 /* GBSubmodule.m in Sources */ = {isa = PBXBuildFile; fileRef = 70865D2A12D25F5F00033683 /* GBSubmodule.m */; };
 		70EEC8D012DFE33E00DD1555 /* GBSubmodulesTask.m in Sources */ = {isa = PBXBuildFile; fileRef = 70EEC8CF12DFE33E00DD1555 /* GBSubmodulesTask.m */; };
 		8D15AC320486D014006FF6A4 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A37F4B0FDCFA73011CA2CEA /* main.m */; settings = {ATTRIBUTES = (); }; };
@@ -1015,6 +1017,7 @@
 		6FAD35352F71550000C09C6B /* Gitbox AppStore-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Gitbox AppStore-Bridging-Header.h"; sourceTree = "<group>"; };
 		6FAD35362F71550000C09C6B /* Gitbox-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Gitbox-Bridging-Header.h"; sourceTree = "<group>"; };
 		6FAD35372F71550E00C09C6B /* GBBadgeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GBBadgeView.swift; sourceTree = "<group>"; };
+		6FCC000A2F8A000100C09C6B /* GBColumnWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GBColumnWindowController.swift; sourceTree = "<group>"; };
 		70865D2912D25F5F00033683 /* GBSubmodule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GBSubmodule.h; sourceTree = "<group>"; };
 		70865D2A12D25F5F00033683 /* GBSubmodule.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GBSubmodule.m; sourceTree = "<group>"; };
 		70EEC8CE12DFE33E00DD1555 /* GBSubmodulesTask.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GBSubmodulesTask.h; sourceTree = "<group>"; };
@@ -1420,6 +1423,7 @@
 			children = (
 				6FAD35322F7154D300C09C6B /* GBSidebarCellView.swift */,
 				6FAD35372F71550E00C09C6B /* GBBadgeView.swift */,
+				6FCC000A2F8A000100C09C6B /* GBColumnWindowController.swift */,
 				20A37BA4120DC1D90068AB8B /* GBSidebarController.h */,
 				20A37BA5120DC1D90068AB8B /* GBSidebarController.m */,
 				20A37BB5120DC7640068AB8B /* GBSidebarController.xib */,
@@ -2209,6 +2213,7 @@
 				20A971E112C7D0D500E2B7B9 /* GBStageMessageHistoryController.m in Sources */,
 				2016464F12D0C2F6005C69DA /* GBUserpicController.m in Sources */,
 				6FAD35342F7154D300C09C6B /* GBSidebarCellView.swift in Sources */,
+				6FCC000B2F8A000100C09C6B /* GBColumnWindowController.swift in Sources */,
 				2016466312D0D0EC005C69DA /* OAHTTPDownload.m in Sources */,
 				2016466412D0D0EC005C69DA /* OAHTTPQueue.m in Sources */,
 				2016466512D0D0EC005C69DA /* OAXMLDecoder.m in Sources */,
@@ -2327,6 +2332,7 @@
 				2093AAAA11B15E1500239185 /* NSSplitView+OASplitViewHelpers.m in Sources */,
 				2093AC8711B2EB9100239185 /* GBCommitPromptController.m in Sources */,
 				6FAD35332F7154D300C09C6B /* GBSidebarCellView.swift in Sources */,
+				6FCC000C2F8A000100C09C6B /* GBColumnWindowController.swift in Sources */,
 				200B08B511B6E359004C09A8 /* GBLocalRemoteAssociationTask.m in Sources */,
 				20B399FA11B7F30600D6A3C4 /* GBLocalRefsTask.m in Sources */,
 				209A935F11BA934C006B0B5C /* GBFileEditingController.m in Sources */,
@@ -2646,7 +2652,7 @@
 		C05733CC08A9546B00998B17 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				APP_VERSION = 1.7.0;
+				APP_VERSION = 1.7.1;
 				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer: Oleg Andreev (9F23AVDPMZ)";
@@ -2671,7 +2677,7 @@
 		C05733CD08A9546B00998B17 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				APP_VERSION = 1.7.0;
+				APP_VERSION = 1.7.1;
 				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer: Oleg Andreev (9F23AVDPMZ)";

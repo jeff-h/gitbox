@@ -75,12 +75,8 @@
 	static dispatch_once_t once = 0;
 	dispatch_once( &once, ^{
 		Class cls = NSClassFromString(@"GBColumnWindowController");
-		if (!cls) {
-			NSLog(@"GBColumnWindowController not found — falling back to GBMainWindowController");
-			cls = self;
-		}
+		if (!cls) cls = self;
 		instance = [[cls alloc] initWithWindowNibName:@"GBMainWindowController"];
-		NSLog(@"+[GBMainWindowController instance]: created %@ (class=%@)", instance, NSStringFromClass([instance class]));
 	});
 	return instance;
 }

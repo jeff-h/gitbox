@@ -149,13 +149,16 @@ class GBSidebarCellView: NSTableCellView, NSTextFieldDelegate {
         var symbolName: String
         var accessibilityDesc: String
 
-        // Check if this is an uncloned submodule
+        // Check if this is a submodule (cloned or uncloned)
         if let obj = item.object,
            obj.responds(to: #selector(GBSidebarItemObject.sidebarItemActionButtonTitle)),
            let title = obj.sidebarItemActionButtonTitle?(),
            title == NSLocalizedString("Download", comment: "") {
-            symbolName = "folder.fill.badge.questionmark"
-            accessibilityDesc = "Not downloaded"
+            symbolName = "shippingbox.fill"
+            accessibilityDesc = "Submodule (not downloaded)"
+        } else if item.object is GBSubmoduleController {
+            symbolName = "shippingbox.fill"
+            accessibilityDesc = "Submodule"
         } else if item.object is GBRepositoriesGroup {
             symbolName = "folder"
             accessibilityDesc = "Group"

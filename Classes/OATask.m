@@ -615,6 +615,11 @@ NSString* OATaskDidDeallocateNotification  = @"OATaskDidDeallocateNotification";
 	[environment setObject:path forKey:@"PATH"];
 	
 	[environment setObject:@":0" forKey:@"DISPLAY"];
+
+	// Set GIT_EXEC_PATH so git can find sub-commands (e.g. git-submodule)
+	// that live in libexec/git-core/ alongside the main binary.
+	NSString* execPath = [self.launchPath stringByDeletingLastPathComponent];
+	[environment setObject:execPath forKey:@"GIT_EXEC_PATH"];
 	
 	NSString* locale = @"en_US.UTF-8";
 	[environment setObject:locale forKey:@"LANG"];

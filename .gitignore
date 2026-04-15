@@ -19,6 +19,10 @@ xcshareddata
 # JetBrains App Code
 .idea
 openssl/lib/pkgconfig
+openssl/lib/*_x86_64.a
 openssl/ssl
 openssl/bin
+
+# Claude Code
+.claude/
 

@@ -87,7 +87,7 @@
 - (IBAction) rebaseSkip:(id)sender;
 - (IBAction) rebaseContinue:(id)sender;
 
-- (IBAction) openInFinder:(id)sender;
+- (IBAction) showInFinder:(id)sender;
 - (IBAction) openInTerminal:(id)sender;
 - (IBAction) openInXcode:(NSMenuItem*)sender;
 

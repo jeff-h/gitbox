@@ -296,10 +296,10 @@
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="983"/>
-                            <menuItem title="Open in Finder" id="725">
+                            <menuItem title="Show in Finder" id="725">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
-                                    <action selector="openInFinder:" target="-1" id="726"/>
+                                    <action selector="showInFinder:" target="-1" id="726"/>
                                 </connections>
                             </menuItem>
                             <menuItem title="Open in Terminal" id="634">

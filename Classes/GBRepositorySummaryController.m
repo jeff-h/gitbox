@@ -383,9 +383,12 @@
 	return url ? url : @"";
 }
 
-- (IBAction)openInFinder:(id)sender
+- (IBAction)showInFinder:(id)sender
 {
-	[[NSWorkspace sharedWorkspace] openURL:self.repository.url];
+	NSString* path = self.repository.url.path;
+	if (path) {
+		[[NSWorkspace sharedWorkspace] selectFile:path inFileViewerRootedAtPath:@""];
+	}
 }
 
 - (void) didUpdateText:(NSNotification*)notif

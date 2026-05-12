@@ -14,6 +14,6 @@
 @property (weak) IBOutlet NSView *remainingView;
 @property (unsafe_unretained) IBOutlet NSTextView *gitignoreTextView;
 
-- (IBAction)openInFinder:(id)sender;
+- (IBAction)showInFinder:(id)sender;
 
 @end

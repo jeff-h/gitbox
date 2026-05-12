@@ -590,7 +590,7 @@
 - (void) addOpenMenuItemsToMenu:(NSMenu*)aMenu
 {
 	[aMenu addItem:[[NSMenuItem alloc] 
-					 initWithTitle:NSLocalizedString(@"Open in Finder", @"Sidebar") action:@selector(openInFinder:) keyEquivalent:@""]];
+					 initWithTitle:NSLocalizedString(@"Show in Finder", @"Sidebar") action:@selector(showInFinder:) keyEquivalent:@""]];
 	[aMenu addItem:[[NSMenuItem alloc] 
 					 initWithTitle:NSLocalizedString(@"Open in Terminal", @"Sidebar") action:@selector(openInTerminal:) keyEquivalent:@""]];
 	[aMenu addItem:[[NSMenuItem alloc] 
@@ -1624,9 +1624,12 @@
 	// TODO: perform some redoes
 }
 
-- (IBAction) openInFinder:(id)sender
+- (IBAction) showInFinder:(id)sender
 {
-	[[NSWorkspace sharedWorkspace] openURL:[self url]];
+	NSString* path = [self url].path;
+	if (path) {
+		[[NSWorkspace sharedWorkspace] selectFile:path inFileViewerRootedAtPath:@""];
+	}
 }
 
 - (IBAction) openInTerminal:(id)_

@@ -101,24 +101,33 @@
 - (NSMenu*) defaultMenu
 {
 	NSMenu* menu = [[NSMenu alloc] initWithTitle:@""];
-	
-	[menu addItem:[[NSMenuItem alloc] 
-					initWithTitle:NSLocalizedString(@"Add Repository...", @"Sidebar") action:@selector(openDocument:) keyEquivalent:@""]];
-	[menu addItem:[[NSMenuItem alloc] 
-					initWithTitle:NSLocalizedString(@"Clone Repository...", @"Sidebar") action:@selector(cloneRepository:) keyEquivalent:@""]];
-	
-	[menu addItem:[NSMenuItem separatorItem]];
-	
-	[menu addItem:[[NSMenuItem alloc]
-					initWithTitle:NSLocalizedString(@"New Group", @"Sidebar") action:@selector(addGroup:) keyEquivalent:@""]];
-
-	[menu addItem:[NSMenuItem separatorItem]];
-
-	[menu addItem:[[NSMenuItem alloc]
-					initWithTitle:NSLocalizedString(@"Remove", @"Sidebar") action:@selector(remove:) keyEquivalent:@""]];
-
 	menu.delegate = self;
+	// Items are populated dynamically in menuNeedsUpdate: based on which
+	// row (if any) was right-clicked.
 	return menu;
+}
+
+// The item under the cursor when the right-click happened.
+// Unlike clickedSidebarItem, this returns the row even if it's selected.
+- (GBSidebarItem*) rightClickedSidebarItem
+{
+	NSInteger row = [self.outlineView clickedRow];
+	if (row < 0) return nil;
+	return [self.outlineView itemAtRow:row];
+}
+
+- (void) appendDefaultMenuItemsToMenu:(NSMenu*)menu
+{
+	[menu addItem:[[NSMenuItem alloc]
+				   initWithTitle:NSLocalizedString(@"Add Repository...", @"Sidebar")
+				   action:@selector(openDocument:) keyEquivalent:@""]];
+	[menu addItem:[[NSMenuItem alloc]
+				   initWithTitle:NSLocalizedString(@"Clone Repository...", @"Sidebar")
+				   action:@selector(cloneRepository:) keyEquivalent:@""]];
+	[menu addItem:[NSMenuItem separatorItem]];
+	[menu addItem:[[NSMenuItem alloc]
+				   initWithTitle:NSLocalizedString(@"New Group", @"Sidebar")
+				   action:@selector(addGroup:) keyEquivalent:@""]];
 }
 
 
@@ -254,10 +263,37 @@
 
 
 
+- (void) menuNeedsUpdate:(NSMenu*)menu
+{
+	if (menu != self.outlineView.menu) return; // we only manage the outline view's menu
+
+	[menu removeAllItems];
+
+	GBSidebarItem* item = [self rightClickedSidebarItem];
+	if (item && [item.object respondsToSelector:@selector(sidebarItemMenu)])
+	{
+		// Use the item's own menu (repo, group, submodule)
+		NSMenu* itemMenu = [item.object sidebarItemMenu];
+		// Steal the items — NSMenuItems can't belong to two menus, so move them.
+		NSArray* itemsCopy = [itemMenu.itemArray copy];
+		for (NSMenuItem* mi in itemsCopy) {
+			[itemMenu removeItem:mi];
+			[menu addItem:mi];
+		}
+	}
+	else
+	{
+		// Empty-space click — show the default menu
+		[self appendDefaultMenuItemsToMenu:menu];
+	}
+}
+
 // Inserts clicked item in the responder chain
 - (void) menuWillOpen:(NSMenu*)aMenu
 {
-	self.rootController.clickedSidebarItem = self.clickedSidebarItem;
+	// Set clickedSidebarItem from the right-clicked row so actions know
+	// which item to operate on (works even when the row is selected).
+	self.rootController.clickedSidebarItem = [self rightClickedSidebarItem];
 }
 
 - (void) menuDidClose:(NSMenu*)aMenu

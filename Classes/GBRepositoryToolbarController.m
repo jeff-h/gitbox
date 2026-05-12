@@ -31,9 +31,9 @@
 // Modern search toolbar item (replaces the XIB-based NSSearchField)
 @property(nonatomic, strong) NSSearchToolbarItem* searchToolbarItem;
 
-// Debounce + Option modifier handling for search
+// Debounce + search scope (commits vs diffs)
 @property(nonatomic, assign) NSUInteger searchGeneration;
-@property(nonatomic, strong) id flagsChangedMonitor;
+@property(nonatomic, assign) BOOL searchInDiffsMode;
 - (void) updateDisabledState;
 - (void) updateBranchMenus;
 - (void) updateCurrentBranchMenus;
@@ -65,10 +65,6 @@
 - (void) dealloc
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
-	if (self.flagsChangedMonitor) {
-		[NSEvent removeMonitor:self.flagsChangedMonitor];
-		self.flagsChangedMonitor = nil;
-	}
 }
 
 - (id)init
@@ -143,34 +139,83 @@
 	NSSearchToolbarItem* item = [[NSSearchToolbarItem alloc] initWithItemIdentifier:@"GBSearchBar"];
 	item.searchField.recentsAutosaveName = @"GBHistorySearchAutosave";
 	item.label = NSLocalizedString(@"Search", @"Toolbar");
+	item.searchField.searchMenuTemplate = [self buildSearchScopeMenu];
 
 	self.searchToolbarItem = item;
 	[self updateSearchPlaceholder];
-	[self installFlagsChangedMonitorIfNeeded];
 	return item;
 }
 
-- (BOOL) isOptionHeld
+// Search mode lives on the toolbar controller because it's a UI concern
+// (mirrored into the repositoryController only when a search is actually run)
+- (NSMenu*) buildSearchScopeMenu
 {
-	return ([NSEvent modifierFlags] & NSEventModifierFlagOption) != 0;
+	NSMenu* menu = [[NSMenu alloc] initWithTitle:@""];
+
+	NSMenuItem* commitsItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Search", @"Search scope menu")
+														 action:@selector(setSearchScopeCommits:)
+												  keyEquivalent:@""];
+	commitsItem.target = self;
+	commitsItem.state = self.searchInDiffsMode ? NSControlStateValueOff : NSControlStateValueOn;
+	[menu addItem:commitsItem];
+
+	NSMenuItem* diffsItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Search in diffs", @"Search scope menu")
+													   action:@selector(setSearchScopeDiffs:)
+												keyEquivalent:@""];
+	diffsItem.target = self;
+	diffsItem.state = self.searchInDiffsMode ? NSControlStateValueOn : NSControlStateValueOff;
+	[menu addItem:diffsItem];
+
+	// Standard Recents section (the NSSearchField will populate this)
+	[menu addItem:[NSMenuItem separatorItem]];
+
+	NSMenuItem* recentsTitle = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Recent Searches", @"Search menu") action:nil keyEquivalent:@""];
+	recentsTitle.tag = NSSearchFieldRecentsTitleMenuItemTag;
+	[menu addItem:recentsTitle];
+
+	NSMenuItem* recents = [[NSMenuItem alloc] initWithTitle:@"" action:nil keyEquivalent:@""];
+	recents.tag = NSSearchFieldRecentsMenuItemTag;
+	[menu addItem:recents];
+
+	NSMenuItem* clearItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Clear Recent Searches", @"Search menu") action:nil keyEquivalent:@""];
+	clearItem.tag = NSSearchFieldClearRecentsMenuItemTag;
+	[menu addItem:clearItem];
+
+	return menu;
+}
+
+- (IBAction) setSearchScopeCommits:(id)sender
+{
+	if (!self.searchInDiffsMode) return;
+	self.searchInDiffsMode = NO;
+	self.searchToolbarItem.searchField.searchMenuTemplate = [self buildSearchScopeMenu];
+	[self updateSearchPlaceholder];
+	// Re-fire the current search in the new mode
+	NSString* query = [self.searchField stringValue];
+	if ([query length] > 0) {
+		[self.repositoryController setSearchString:query inDiffs:NO];
+	}
+}
+
+- (IBAction) setSearchScopeDiffs:(id)sender
+{
+	if (self.searchInDiffsMode) return;
+	self.searchInDiffsMode = YES;
+	self.searchToolbarItem.searchField.searchMenuTemplate = [self buildSearchScopeMenu];
+	[self updateSearchPlaceholder];
+	// Re-fire the current search in the new mode
+	NSString* query = [self.searchField stringValue];
+	if ([query length] > 0) {
+		[self.repositoryController setSearchString:query inDiffs:YES];
+	}
 }
 
 - (void) updateSearchPlaceholder
 {
-	NSString* placeholder = [self isOptionHeld]
-		? NSLocalizedString(@"Search in diffs", @"Toolbar — Option held")
+	NSString* placeholder = self.searchInDiffsMode
+		? NSLocalizedString(@"Search in diffs", @"Toolbar")
 		: NSLocalizedString(@"Search", @"Toolbar");
 	self.searchToolbarItem.searchField.placeholderString = placeholder;
-}
-
-- (void) installFlagsChangedMonitorIfNeeded
-{
-	if (self.flagsChangedMonitor) return;
-	__weak typeof(self) weakSelf = self;
-	self.flagsChangedMonitor = [NSEvent addLocalMonitorForEventsMatchingMask:NSEventMaskFlagsChanged handler:^NSEvent*(NSEvent* event) {
-		[weakSelf updateSearchPlaceholder];
-		return event;
-	}];
 }
 
 - (NSSegmentedControl*) syncBarControl
@@ -364,7 +409,6 @@
 - (IBAction)searchFieldDidChange:(id)sender
 {
 	// Debounce: only fire the search once typing settles (250ms).
-	// Capture the current Option state when the timer expires.
 	NSString* query = [[self.searchField stringValue] copy];
 
 	NSUInteger generation = ++self.searchGeneration;
@@ -375,8 +419,7 @@
 		if (!strongSelf) return;
 		if (generation != strongSelf.searchGeneration) return; // superseded
 
-		BOOL inDiffs = [strongSelf isOptionHeld];
-		[strongSelf.repositoryController setSearchString:query inDiffs:inDiffs];
+		[strongSelf.repositoryController setSearchString:query inDiffs:strongSelf.searchInDiffsMode];
 	});
 }
 

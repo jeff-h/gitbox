@@ -8,7 +8,7 @@
 @property(nonatomic, strong, readwrite) NSMutableArray* commits;
 @property(nonatomic, strong) NSMutableSet* commitIds; // set of ids to reject duplicates
 @property(nonatomic, assign) BOOL cancelled;
-@property(nonatomic, weak) GBHistoryTask* task;
+@property(nonatomic, strong) GBHistoryTask* task;
 @property(nonatomic, assign) int lastTimestamp;
 @property(nonatomic, assign) BOOL isRunning;
 @property(nonatomic, assign) NSUInteger limit;
@@ -30,6 +30,7 @@
 @synthesize isRunning;
 @synthesize limit;
 @synthesize usedCachedCommits;
+@synthesize searchInDiffs;
 
 - (void) dealloc
 {
@@ -138,7 +139,7 @@
 	self.task = [GBHistoryTask task];
 	self.isRunning = YES;
 	
-	self.task.includeDiff = YES;
+	self.task.includeDiff = self.searchInDiffs;
 	self.task.repository = self.repository;
 	self.task.branch = self.repository.currentLocalRef;
 	if ([self.repository doesRefExist:self.repository.currentRemoteBranch])

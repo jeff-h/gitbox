@@ -28,8 +28,12 @@
 
 @property(nonatomic, assign, readonly, getter=isSearching) BOOL searching;
 @property(nonatomic, copy)   NSString* searchString;
+@property(nonatomic, assign) BOOL searchInDiffs;
 @property(nonatomic, strong, readonly) NSArray* searchResults;
 @property(nonatomic, assign, readonly) double searchProgress;
+
+// Set both at once to avoid double-spawning a search task.
+- (void) setSearchString:(NSString*)str inDiffs:(BOOL)inDiffs;
 
 @property(nonatomic, assign) NSInteger isRemoteBranchesDisabled;
 @property(nonatomic, assign, readonly) NSInteger isDisabled;

@@ -30,6 +30,10 @@
 
 // Modern search toolbar item (replaces the XIB-based NSSearchField)
 @property(nonatomic, strong) NSSearchToolbarItem* searchToolbarItem;
+
+// Debounce + Option modifier handling for search
+@property(nonatomic, assign) NSUInteger searchGeneration;
+@property(nonatomic, strong) id flagsChangedMonitor;
 - (void) updateDisabledState;
 - (void) updateBranchMenus;
 - (void) updateCurrentBranchMenus;
@@ -61,6 +65,10 @@
 - (void) dealloc
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	if (self.flagsChangedMonitor) {
+		[NSEvent removeMonitor:self.flagsChangedMonitor];
+		self.flagsChangedMonitor = nil;
+	}
 }
 
 - (id)init
@@ -134,11 +142,35 @@
 
 	NSSearchToolbarItem* item = [[NSSearchToolbarItem alloc] initWithItemIdentifier:@"GBSearchBar"];
 	item.searchField.recentsAutosaveName = @"GBHistorySearchAutosave";
-	item.searchField.placeholderString = NSLocalizedString(@"Search", @"Toolbar");
 	item.label = NSLocalizedString(@"Search", @"Toolbar");
 
 	self.searchToolbarItem = item;
+	[self updateSearchPlaceholder];
+	[self installFlagsChangedMonitorIfNeeded];
 	return item;
+}
+
+- (BOOL) isOptionHeld
+{
+	return ([NSEvent modifierFlags] & NSEventModifierFlagOption) != 0;
+}
+
+- (void) updateSearchPlaceholder
+{
+	NSString* placeholder = [self isOptionHeld]
+		? NSLocalizedString(@"Search in diffs", @"Toolbar — Option held")
+		: NSLocalizedString(@"Search", @"Toolbar");
+	self.searchToolbarItem.searchField.placeholderString = placeholder;
+}
+
+- (void) installFlagsChangedMonitorIfNeeded
+{
+	if (self.flagsChangedMonitor) return;
+	__weak typeof(self) weakSelf = self;
+	self.flagsChangedMonitor = [NSEvent addLocalMonitorForEventsMatchingMask:NSEventMaskFlagsChanged handler:^NSEvent*(NSEvent* event) {
+		[weakSelf updateSearchPlaceholder];
+		return event;
+	}];
 }
 
 - (NSSegmentedControl*) syncBarControl
@@ -331,7 +363,21 @@
 
 - (IBAction)searchFieldDidChange:(id)sender
 {
-	self.repositoryController.searchString = [self.searchField stringValue];
+	// Debounce: only fire the search once typing settles (250ms).
+	// Capture the current Option state when the timer expires.
+	NSString* query = [[self.searchField stringValue] copy];
+
+	NSUInteger generation = ++self.searchGeneration;
+	__weak typeof(self) weakSelf = self;
+	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.25 * NSEC_PER_SEC)),
+				   dispatch_get_main_queue(), ^{
+		typeof(self) strongSelf = weakSelf;
+		if (!strongSelf) return;
+		if (generation != strongSelf.searchGeneration) return; // superseded
+
+		BOOL inDiffs = [strongSelf isOptionHeld];
+		[strongSelf.repositoryController setSearchString:query inDiffs:inDiffs];
+	});
 }
 
 

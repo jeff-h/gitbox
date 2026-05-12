@@ -158,6 +158,7 @@
 @synthesize stageBadgeInteger;
 
 @synthesize searchString;
+@synthesize searchInDiffs;
 @synthesize searchResults;
 @synthesize currentSearch;
 @synthesize searchProgress;
@@ -1492,22 +1493,39 @@
 
 - (void) setSearchString:(NSString *)newString
 {
-	if (searchString == newString) return;
-	
+	[self setSearchString:newString inDiffs:self.searchInDiffs];
+}
+
+- (void) setSearchInDiffs:(BOOL)inDiffs
+{
+	[self setSearchString:self.searchString inDiffs:inDiffs];
+}
+
+- (void) setSearchString:(NSString*)newString inDiffs:(BOOL)inDiffs
+{
+	BOOL sameString = (searchString == newString) || [searchString isEqualToString:newString];
+	BOOL sameMode = (searchInDiffs == inDiffs);
+	if (sameString && sameMode) return;
+
+	// Only re-use the cache when the mode hasn't changed — diff search and
+	// metadata search populate the cache differently.
+	BOOL canReuseCache = sameMode;
+
 	searchString = [newString copy];
-	
+	searchInDiffs = inDiffs;
+
 	self.currentSearch.target = nil;
 	[self.currentSearch cancel];
-	id searchCache = self.currentSearch.searchCache;
+	id searchCache = canReuseCache ? self.currentSearch.searchCache : nil;
 	self.currentSearch = nil;
-	
+
 	if (searchString && [searchString length] > 0)
 	{
-		self.currentSearch = [GBSearch searchWithQuery:[GBSearchQuery queryWithString:searchString] 
-											repository:self.repository 
-												target:self 
+		self.currentSearch = [GBSearch searchWithQuery:[GBSearchQuery queryWithString:searchString]
+											repository:self.repository
+												target:self
 												action:@selector(searchDidUpdate:)];
-		
+		self.currentSearch.searchInDiffs = inDiffs;
 		self.currentSearch.searchCache = searchCache;
 		[self.currentSearch start];
 		[self notifyWithSelector:@selector(repositoryControllerSearchDidStartRunning:)];

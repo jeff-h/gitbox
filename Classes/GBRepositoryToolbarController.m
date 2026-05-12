@@ -23,6 +23,10 @@
 @property(weak, nonatomic, readonly) NSPopUpButton* otherBranchPopUpButton;
 @property(weak, nonatomic, readonly) NSSearchField* searchField;
 @property(nonatomic, strong) NSMutableArray* openedMenus;
+
+// Unified sync bar: [ local branch ▾ | ← pull | push → | remote branch ▾ ]
+@property(nonatomic, strong) NSToolbarItem* syncBarItem;
+@property(weak, nonatomic, readonly) NSSegmentedControl* syncBarControl;
 - (void) updateDisabledState;
 - (void) updateBranchMenus;
 - (void) updateCurrentBranchMenus;
@@ -48,6 +52,7 @@
 @dynamic pullButton;
 @dynamic otherBranchPopUpButton;
 @dynamic searchField;
+@dynamic syncBarControl;
 
 
 - (void) dealloc
@@ -120,6 +125,123 @@
 	return (id)[[self toolbarItemForIdentifier:@"GBSearch"] view];
 }
 
+- (NSSegmentedControl*) syncBarControl
+{
+	return (NSSegmentedControl*)self.syncBarItem.view;
+}
+
+- (NSToolbarItem*) ensureSyncBarItem
+{
+	if (self.syncBarItem) return self.syncBarItem;
+
+	NSSegmentedControl* seg = [NSSegmentedControl new];
+	seg.segmentCount = 4;
+	seg.segmentStyle = NSSegmentStyleRounded;
+	seg.trackingMode = NSSegmentSwitchTrackingMomentary;
+
+	// Segment 0: local branch (menu)
+	[seg setLabel:@"main" forSegment:0];
+	[seg setWidth:0 forSegment:0]; // auto-size
+	[seg setShowsMenuIndicator:YES forSegment:0];
+	[seg setMenu:[[NSMenu alloc] init] forSegment:0];
+
+	// Segment 1: pull/rebase
+	[seg setLabel:@"← pull" forSegment:1];
+	[seg setWidth:0 forSegment:1];
+
+	// Segment 2: push/force (arrow trails the label, so use text not image)
+	[seg setLabel:@"push →" forSegment:2];
+	[seg setWidth:0 forSegment:2];
+
+	// Segment 3: remote branch (menu)
+	[seg setLabel:@"origin/main" forSegment:3];
+	[seg setWidth:0 forSegment:3];
+	[seg setShowsMenuIndicator:YES forSegment:3];
+	[seg setMenu:[[NSMenu alloc] init] forSegment:3];
+
+	seg.target = self;
+	seg.action = @selector(syncBarClicked:);
+
+	[seg sizeToFit];
+
+	NSToolbarItem* item = [[NSToolbarItem alloc] initWithItemIdentifier:@"GBSyncBar"];
+	item.view = seg;
+	item.label = @"";
+	item.paletteLabel = @"Sync";
+	item.minSize = NSMakeSize(300, 25);
+	item.maxSize = NSMakeSize(600, 32);
+
+	self.syncBarItem = item;
+	return item;
+}
+
+- (IBAction) syncBarClicked:(NSSegmentedControl*)sender
+{
+	NSInteger segment = sender.selectedSegment;
+
+	if (segment == 0) {
+		// Local branch — show menu immediately
+		NSMenu* menu = [sender menuForSegment:0];
+		if (menu && menu.numberOfItems > 0) {
+			NSRect segRect = [self frameOfSegment:0 inControl:sender];
+			[menu popUpMenuPositioningItem:nil atLocation:NSMakePoint(segRect.origin.x, NSMinY(segRect)) inView:sender];
+		}
+	} else if (segment == 1) {
+		// Pull/rebase/fetch
+		NSUInteger modifierFlags = [[NSApp currentEvent] modifierFlags];
+		if (modifierFlags & NSAlternateKeyMask) {
+			[self.repositoryController fetch:sender];
+		} else if ((modifierFlags & NSShiftKeyMask) && (modifierFlags & NSCommandKeyMask)) {
+			[self.repositoryController rebase:sender];
+		} else {
+			[self.repositoryController pull:sender];
+		}
+	} else if (segment == 2) {
+		// Push/force
+		NSUInteger modifierFlags = [[NSApp currentEvent] modifierFlags];
+		if ((modifierFlags & NSShiftKeyMask) && (modifierFlags & NSCommandKeyMask)) {
+			[self.repositoryController forcePush:sender];
+		} else {
+			[self.repositoryController push:sender];
+		}
+	} else if (segment == 3) {
+		// Remote branch — show menu immediately
+		NSMenu* menu = [sender menuForSegment:3];
+		if (menu && menu.numberOfItems > 0) {
+			NSRect segRect = [self frameOfSegment:3 inControl:sender];
+			[menu popUpMenuPositioningItem:nil atLocation:NSMakePoint(segRect.origin.x, NSMinY(segRect)) inView:sender];
+		}
+	}
+}
+
+- (NSRect) frameOfSegment:(NSInteger)segment inControl:(NSSegmentedControl*)control
+{
+	CGFloat x = 0;
+	for (NSInteger i = 0; i < segment; i++) {
+		x += [control widthForSegment:i];
+		if ([control widthForSegment:i] == 0) {
+			// Auto-sized segment — estimate from the label
+			NSSize labelSize = [[control labelForSegment:i] sizeWithAttributes:@{NSFontAttributeName: control.font}];
+			x += labelSize.width + 24; // padding for menu indicator + margins
+		}
+	}
+	CGFloat w = [control widthForSegment:segment];
+	if (w == 0) {
+		NSSize labelSize = [[control labelForSegment:segment] sizeWithAttributes:@{NSFontAttributeName: control.font}];
+		w = labelSize.width + 24;
+	}
+	return NSMakeRect(x, 0, w, control.frame.size.height);
+}
+
+
+
+- (NSToolbarItem*) programmaticToolbarItemForIdentifier:(NSString*)itemIdentifier
+{
+	if ([itemIdentifier isEqualToString:@"GBSyncBar"]) {
+		return [self ensureSyncBarItem];
+	}
+	return [super programmaticToolbarItemForIdentifier:itemIdentifier];
+}
 
 
 #pragma mark - GBRepositoryController notifications
@@ -252,18 +374,8 @@
 	{
 		[self appendItemWithIdentifier:@"GBSettings"];
 	}
-	[self appendItemWithIdentifier:@"GBCurrentBranch"];
-	
-	GBRepository* repo = self.repositoryController.repository;
-	if (repo.currentRemoteBranch && [repo.currentRemoteBranch isLocalBranch])
-	{
-		[self appendItemWithIdentifier:@"GBPull"];
-	}
-	else
-	{
-		[self appendItemWithIdentifier:@"GBPullPush"];
-	}
-	[self appendItemWithIdentifier:@"GBOtherBranch"];
+	[self appendItemWithIdentifier:NSToolbarFlexibleSpaceItemIdentifier];
+	[self appendItemWithIdentifier:@"GBSyncBar"];
 	[self appendItemWithIdentifier:NSToolbarFlexibleSpaceItemIdentifier];
 	[self appendItemWithIdentifier:@"GBSearch"];
 	
@@ -309,52 +421,66 @@
 	
 	[self.currentBranchPopUpButton setEnabled:!isDisabled && !isCurrentBranchDisabled];
 	[self.otherBranchPopUpButton setEnabled:!isDisabled && !isRemoteBranchDisabled];
-	
+
+	// Sync bar: segment 0 = local branch, segment 3 = remote branch
+	NSSegmentedControl* syncBar = self.syncBarControl;
+	if (syncBar) {
+		[syncBar setEnabled:!isDisabled && !isCurrentBranchDisabled forSegment:0];
+		[syncBar setEnabled:!isDisabled && !isRemoteBranchDisabled forSegment:3];
+	}
+
 	[self.searchField setEnabled:YES];
-	
+
 	[self updateSyncButtons];
 }
 
 
 - (void) updateSyncButtons
 {
-	NSSegmentedControl* control = self.pullPushControl;
+	// Update the unified sync bar (segments 1=pull, 2=push)
+	NSSegmentedControl* syncBar = self.syncBarControl;
+	if (!syncBar) return;
+
 	GBRepository* repo = self.repositoryController.repository;
-	
 	NSUInteger modifierFlags = [[NSApp currentEvent] modifierFlags];
-	
+
 	if (repo.currentRemoteBranch && [repo.currentRemoteBranch isLocalBranch])
 	{
-		[control setLabel:NSLocalizedString(@"← merge", @"Toolbar") forSegment:0];
-		[control setLabel:@" " forSegment:1];
-		[self.pullButton setTitle:NSLocalizedString(@"← merge   ", @"Toolbar")];
-		
+		[syncBar setLabel:@"← merge" forSegment:1];
+		[syncBar setLabel:@"" forSegment:2];
+		[syncBar setEnabled:NO forSegment:2];
+
 		if ((modifierFlags & NSShiftKeyMask) && (modifierFlags & NSCommandKeyMask))
 		{
-			[self.pullButton setTitle:NSLocalizedString(@"← rebase   ", @"Toolbar")];
+			[syncBar setLabel:@"← rebase" forSegment:1];
 		}
 	}
 	else
 	{
-		[control setLabel:NSLocalizedString(@"← pull", @"Toolbar") forSegment:0];
-		[control setLabel:NSLocalizedString(@"push →", @"Toolbar") forSegment:1];
-		
+		[syncBar setLabel:@"← pull" forSegment:1];
+		[syncBar setLabel:@"push →" forSegment:2];
+		[syncBar setEnabled:YES forSegment:2];
+
 		if (modifierFlags & NSAlternateKeyMask)
 		{
-			[control setLabel:NSLocalizedString(@"← fetch", @"Toolbar") forSegment:0];
+			[syncBar setLabel:@"← fetch" forSegment:1];
 		}
 		else if ((modifierFlags & NSShiftKeyMask) && (modifierFlags & NSCommandKeyMask))
 		{
-			[control setLabel:NSLocalizedString(@"← rebase", @"Toolbar") forSegment:0];
-			[control setLabel:NSLocalizedString(@"force →", @"Toolbar") forSegment:1];
+			[syncBar setLabel:@"← rebase" forSegment:1];
+			[syncBar setLabel:@"force →" forSegment:2];
 		}
-		
-		[self.pullButton setTitle:NSLocalizedString(@"← pull   ", @"Toolbar")];
 	}
-	
-	[control setEnabled:[self.repositoryController validatePull:nil] forSegment:0];
-	[control setEnabled:[self.repositoryController validatePush:nil] /*&& repo.unpushedCommitsCount > 0*/ forSegment:1]; // commented out because it looks ugly
-	[self.pullButton setEnabled:[self.repositoryController validatePull:nil]];
+
+	[syncBar setEnabled:[self.repositoryController validatePull:nil] forSegment:1];
+	BOOL canPush = [self.repositoryController validatePush:nil];
+	if (!(repo.currentRemoteBranch && [repo.currentRemoteBranch isLocalBranch])) {
+		[syncBar setEnabled:canPush forSegment:2];
+	}
+
+	[syncBar sizeToFit];
+	self.syncBarItem.minSize = syncBar.fittingSize;
+	self.syncBarItem.maxSize = NSMakeSize(syncBar.fittingSize.width + 50, 32);
 }
 
 
@@ -496,6 +622,16 @@
 	// I make sure that the name is set nevertheless.
 	NSString* title = [repo.currentLocalRef displayName];
 	if (title) [button setTitle:title];
+
+	// Update sync bar segment 0 (local branch label + menu)
+	NSSegmentedControl* syncBar = self.syncBarControl;
+	if (syncBar) {
+		if (title) [syncBar setLabel:title forSegment:0];
+		[syncBar setMenu:currentBranchesMenu forSegment:0];
+		[syncBar sizeToFit];
+		self.syncBarItem.minSize = syncBar.fittingSize;
+		self.syncBarItem.maxSize = NSMakeSize(syncBar.fittingSize.width + 50, 32);
+	}
 }
 
 
@@ -690,6 +826,17 @@
 	else
 	{
 		[button setTitle:NSLocalizedString(@"", @"Toolbar")];
+	}
+
+	// Update sync bar segment 3 (remote branch label + menu)
+	NSSegmentedControl* syncBar = self.syncBarControl;
+	if (syncBar) {
+		NSString* remoteTitle = remoteBranch ? [remoteBranch nameWithRemoteAlias] : @"";
+		[syncBar setLabel:remoteTitle forSegment:3];
+		[syncBar setMenu:remoteBranchesMenu forSegment:3];
+		[syncBar sizeToFit];
+		self.syncBarItem.minSize = syncBar.fittingSize;
+		self.syncBarItem.maxSize = NSMakeSize(syncBar.fittingSize.width + 50, 32);
 	}
 }
 

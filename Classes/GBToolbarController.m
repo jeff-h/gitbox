@@ -152,11 +152,16 @@
 
 
 
-//- (NSToolbarItem*)toolbar:(NSToolbar*)aToolbar itemForItemIdentifier:(NSString*)itemIdentifier willBeInsertedIntoToolbar:(BOOL)flag
-//{
-//  // get the item from dictionary or create if missing
-//  
-//}
+// Subclasses can override to provide programmatic toolbar items.
+- (NSToolbarItem*) programmaticToolbarItemForIdentifier:(NSString*)itemIdentifier
+{
+  return nil;
+}
+
+- (NSToolbarItem*)toolbar:(NSToolbar*)aToolbar itemForItemIdentifier:(NSString*)itemIdentifier willBeInsertedIntoToolbar:(BOOL)flag
+{
+  return [self programmaticToolbarItemForIdentifier:itemIdentifier];
+}
 
 
 

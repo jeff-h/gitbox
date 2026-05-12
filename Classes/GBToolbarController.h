@@ -13,5 +13,6 @@
 - (void) replaceItemWithIdentifier:(NSString*)itemIdentifier1 withItemWithIdentifier:(NSString*)itemIdentifier2;
 - (void) removeAdditionalItems;
 - (CGFloat) sidebarPadding;
+- (NSToolbarItem*) programmaticToolbarItemForIdentifier:(NSString*)itemIdentifier;
 
 @end

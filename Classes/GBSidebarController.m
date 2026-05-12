@@ -109,9 +109,14 @@
 	
 	[menu addItem:[NSMenuItem separatorItem]];
 	
-	[menu addItem:[[NSMenuItem alloc] 
+	[menu addItem:[[NSMenuItem alloc]
 					initWithTitle:NSLocalizedString(@"New Group", @"Sidebar") action:@selector(addGroup:) keyEquivalent:@""]];
-	
+
+	[menu addItem:[NSMenuItem separatorItem]];
+
+	[menu addItem:[[NSMenuItem alloc]
+					initWithTitle:NSLocalizedString(@"Remove", @"Sidebar") action:@selector(remove:) keyEquivalent:@""]];
+
 	menu.delegate = self;
 	return menu;
 }

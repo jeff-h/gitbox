@@ -153,10 +153,10 @@
                                     <action selector="paste:" target="-1" id="599"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="Delete" id="555">
+                            <menuItem title="Remove" id="555">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
-                                    <action selector="delete:" target="-1" id="609"/>
+                                    <action selector="remove:" target="-1" id="609"/>
                                 </connections>
                             </menuItem>
                             <menuItem title="Select All" keyEquivalent="a" id="556">

@@ -27,6 +27,9 @@
 // Unified sync bar: [ local branch ▾ | ← pull | push → | remote branch ▾ ]
 @property(nonatomic, strong) NSToolbarItem* syncBarItem;
 @property(weak, nonatomic, readonly) NSSegmentedControl* syncBarControl;
+
+// Modern search toolbar item (replaces the XIB-based NSSearchField)
+@property(nonatomic, strong) NSSearchToolbarItem* searchToolbarItem;
 - (void) updateDisabledState;
 - (void) updateBranchMenus;
 - (void) updateCurrentBranchMenus;
@@ -122,7 +125,20 @@
 
 - (NSSearchField*) searchField
 {
-	return (id)[[self toolbarItemForIdentifier:@"GBSearch"] view];
+	return self.searchToolbarItem.searchField;
+}
+
+- (NSSearchToolbarItem*) ensureSearchToolbarItem
+{
+	if (self.searchToolbarItem) return self.searchToolbarItem;
+
+	NSSearchToolbarItem* item = [[NSSearchToolbarItem alloc] initWithItemIdentifier:@"GBSearchBar"];
+	item.searchField.recentsAutosaveName = @"GBHistorySearchAutosave";
+	item.searchField.placeholderString = NSLocalizedString(@"Search", @"Toolbar");
+	item.label = NSLocalizedString(@"Search", @"Toolbar");
+
+	self.searchToolbarItem = item;
+	return item;
 }
 
 - (NSSegmentedControl*) syncBarControl
@@ -239,6 +255,9 @@
 {
 	if ([itemIdentifier isEqualToString:@"GBSyncBar"]) {
 		return [self ensureSyncBarItem];
+	}
+	if ([itemIdentifier isEqualToString:@"GBSearchBar"]) {
+		return [self ensureSearchToolbarItem];
 	}
 	return [super programmaticToolbarItemForIdentifier:itemIdentifier];
 }
@@ -377,7 +396,7 @@
 	[self appendItemWithIdentifier:NSToolbarFlexibleSpaceItemIdentifier];
 	[self appendItemWithIdentifier:@"GBSyncBar"];
 	[self appendItemWithIdentifier:NSToolbarFlexibleSpaceItemIdentifier];
-	[self appendItemWithIdentifier:@"GBSearch"];
+	[self appendItemWithIdentifier:@"GBSearchBar"];
 	
 	NSSearchField* searchField = self.searchField;
 	

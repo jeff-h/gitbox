@@ -664,6 +664,11 @@ NSString* OATaskDidDeallocateNotification  = @"OATaskDidDeallocateNotification";
 		// FIXME: possibly this was an issue when gitbox was running out of file descriptors
 		//    *** Terminating app due to uncaught exception 'NSInvalidArgumentException', reason: '*** -[NSCFDictionary setObject:forKey:]: attempt to insert nil value (key: _NSTaskOutputFileHandle)'
 		
+		// Give non-interactive tasks /dev/null as stdin.
+		// macOS 26 guards the app's fd 0 — NSTask's internal dup()
+		// on a guarded fd triggers an EXC_GUARD crash.
+		[self.nstask setStandardInput:[NSFileHandle fileHandleWithNullDevice]];
+
 		if (!self.standardOutputHandleOrPipe)
 		{
 			self.standardOutputHandleOrPipe = [[NSPipe alloc] init];

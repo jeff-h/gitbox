@@ -4,10 +4,13 @@
 @class GBRepository;
 @class GBRepositorySettingsViewController;
 
-extern NSString* const GBRepositorySettingsSummary;
 extern NSString* const GBRepositorySettingsBranchesAndTags;
 extern NSString* const GBRepositorySettingsRemoteServers;
+extern NSString* const GBRepositorySettingsIgnoredFiles;
 extern NSString* const GBRepositorySettingsGitConfig;
+
+// Legacy alias — formerly the Summary tab, now maps to Ignored Files.
+extern NSString* const GBRepositorySettingsSummary;
 
 @interface GBRepositorySettingsController : GBWindowControllerWithCallback<NSWindowDelegate>
 

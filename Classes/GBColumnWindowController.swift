@@ -15,6 +15,19 @@ import AppKit
     /// Subview inside contentContainer that sits below the toolbar.
     /// Detail views are loaded into this view instead of the full container,
     /// so they don't render behind the toolbar.
+    ///
+    /// We deliberately do NOT extend this behind the toolbar to get the Tahoe
+    /// "unified" fade-under-toolbar look (à la Keys-Mac, Mail, etc.). That
+    /// approach — drop `titlebarAppearsTransparent`, pin this view to
+    /// `contentContainer.view.topAnchor` instead of `safeAreaLayoutGuide`,
+    /// and let `NSScrollView.automaticallyAdjustsContentInsets` push content
+    /// below the toolbar — works visually for the sidebar and most detail
+    /// panes, but breaks down for the commits column: GB slides the search
+    /// status bar in at the top of that column (GBSearchBarController), and
+    /// it ends up rendered behind the toolbar with an opaque background that
+    /// kills the blur effect on that pane only. Until the search bar is
+    /// rehomed (e.g. into the toolbar itself, or into a host that's aware of
+    /// the safe-area inset), we keep the solid toolbar chrome instead.
     private var contentInsetView: NSView!
 
     // MARK: - Required initialisers

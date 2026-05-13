@@ -7,10 +7,11 @@
 #import "GBRepositoryRemotesController.h"
 #import "GBRepositoryConfigController.h"
 
-NSString* const GBRepositorySettingsSummary         = @"GBRepositorySettingsSummary";
 NSString* const GBRepositorySettingsBranchesAndTags = @"GBRepositorySettingsBranchesAndTags";
 NSString* const GBRepositorySettingsRemoteServers   = @"GBRepositorySettingsRemoteServers";
+NSString* const GBRepositorySettingsIgnoredFiles    = @"GBRepositorySettingsIgnoredFiles";
 NSString* const GBRepositorySettingsGitConfig       = @"GBRepositorySettingsGitConfig";
+NSString* const GBRepositorySettingsSummary         = @"GBRepositorySettingsIgnoredFiles";
 
 @interface GBRepositorySettingsController () <NSTabViewDelegate>
 @property(nonatomic, strong) NSArray* viewControllers;
@@ -48,7 +49,7 @@ NSString* const GBRepositorySettingsGitConfig       = @"GBRepositorySettingsGitC
 {
 	if ((self = [super initWithWindow:aWindow]))
 	{
-		selectedTab = [GBRepositorySettingsSummary copy];
+		selectedTab = [GBRepositorySettingsRemoteServers copy];
 		self.userInfo = [NSMutableDictionary dictionary];
 	}
 	return self;
@@ -62,9 +63,9 @@ NSString* const GBRepositorySettingsGitConfig       = @"GBRepositorySettingsGitC
 {
 	// Not the best place to init controllers, but at least we have the repository here.
 	self.viewControllers = [NSArray arrayWithObjects:
-							[[GBRepositorySummaryController alloc] initWithRepository:self.repository],
-							[[GBRepositoryBranchesAndTagsController alloc] initWithRepository:self.repository],
 							[[GBRepositoryRemotesController alloc] initWithRepository:self.repository],
+							[[GBRepositoryBranchesAndTagsController alloc] initWithRepository:self.repository],
+							[[GBRepositorySummaryController alloc] initWithRepository:self.repository],
 							[[GBRepositoryConfigController alloc] initWithRepository:self.repository],
 							nil];
 	
@@ -121,7 +122,7 @@ NSString* const GBRepositorySettingsGitConfig       = @"GBRepositorySettingsGitC
 
 - (void) setSelectedTab:(NSString*)tabName
 {
-	if (!tabName) tabName = GBRepositorySettingsSummary;
+	if (!tabName) tabName = GBRepositorySettingsRemoteServers;
 	if (selectedTab == tabName) return;
 	
 	selectedTab = [tabName copy];
@@ -262,19 +263,19 @@ NSString* const GBRepositorySettingsGitConfig       = @"GBRepositorySettingsGitC
 	if (![self areTabsPrepared]) return;
 	
 	// Note: selectTabViewItem notifies the delegate
-	if (selectedTab == GBRepositorySettingsSummary)
+	if ([selectedTab isEqualToString:GBRepositorySettingsRemoteServers])
 	{
 		[self selectTabViewItemAtIndex:0];
 	}
-	else if (selectedTab == GBRepositorySettingsBranchesAndTags)
+	else if ([selectedTab isEqualToString:GBRepositorySettingsBranchesAndTags])
 	{
 		[self selectTabViewItemAtIndex:1];
 	}
-	else if (selectedTab == GBRepositorySettingsRemoteServers)
+	else if ([selectedTab isEqualToString:GBRepositorySettingsIgnoredFiles])
 	{
 		[self selectTabViewItemAtIndex:2];
 	}
-	else if (selectedTab == GBRepositorySettingsGitConfig)
+	else if ([selectedTab isEqualToString:GBRepositorySettingsGitConfig])
 	{
 		[self selectTabViewItemAtIndex:3];
 	}

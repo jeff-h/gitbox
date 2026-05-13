@@ -27,6 +27,11 @@
 
 @property(nonatomic, strong) NSArray* changes;
 
+// Subclasses that lay out their header as a sibling view (above the table)
+// rather than as a fake row 0 should override this to return NO. Default YES
+// preserves the original cell-based-table behavior.
+@property(nonatomic, readonly) BOOL embedsHeaderInTable;
+
 - (NSArray*) selectedChanges;
 - (NSCell*) headerCell;
 - (CGFloat) headerHeight;

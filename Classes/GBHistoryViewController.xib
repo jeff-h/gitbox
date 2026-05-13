@@ -27,10 +27,10 @@
                         <rect key="frame" x="0.0" y="0.0" width="407" height="548"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <tableView focusRingType="none" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnReordering="NO" multipleSelection="NO" autosaveColumns="NO" typeSelect="NO" rowHeight="38" id="5" customClass="GBHistoryTableView">
+                            <tableView focusRingType="none" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnReordering="NO" multipleSelection="NO" autosaveColumns="NO" typeSelect="NO" rowHeight="38" gridStyleMask="solidHorizontalLine" id="5" customClass="GBHistoryTableView">
                                 <rect key="frame" x="0.0" y="0.0" width="407" height="548"/>
                                 <autoresizingMask key="autoresizingMask"/>
-                                <size key="intercellSpacing" width="3" height="2"/>
+                                <size key="intercellSpacing" width="3" height="40"/>
                                 <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 <color key="gridColor" white="0.91605839420000001" alpha="1" colorSpace="calibratedWhite"/>
                                 <tableColumns>

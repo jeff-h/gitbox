@@ -140,9 +140,15 @@
 }
 
 
+- (BOOL) embedsHeaderInTable
+{
+	return YES;
+}
+
 - (NSArray*) selectedChanges
 {
-	NSInteger clickedRow = [self.tableView clickedRow] - 1; // compensate for header view
+	NSInteger headerOffset = self.embedsHeaderInTable ? 1 : 0;
+	NSInteger clickedRow = [self.tableView clickedRow] - headerOffset;
 	if (clickedRow < 0)
 	{
 		return [self.statusArrayController selectedObjects];
@@ -152,7 +158,7 @@
 		// if clicked item is contained in selected objects, we take the selection
 		GBChange* clickedChange = [self.changes objectAtIndex:(NSUInteger)clickedRow];
 		NSArray* selectedChanges = [self.statusArrayController selectedObjects];
-		
+
 		if (clickedChange && [selectedChanges containsObject:clickedChange])
 		{
 			return selectedChanges;
@@ -190,13 +196,20 @@
 
 - (void) updateChanges
 {
-	if (self.changes)
+	if (self.embedsHeaderInTable)
 	{
-		self.changesWithHeaderForBindings = [[NSArray arrayWithObject:[GBChange dummy]] arrayByAddingObjectsFromArray:self.changes];
+		if (self.changes)
+		{
+			self.changesWithHeaderForBindings = [[NSArray arrayWithObject:[GBChange dummy]] arrayByAddingObjectsFromArray:self.changes];
+		}
+		else
+		{
+			self.changesWithHeaderForBindings = [NSArray arrayWithObject:[GBChange dummy]];
+		}
 	}
 	else
 	{
-		self.changesWithHeaderForBindings = [NSArray arrayWithObject:[GBChange dummy]];
+		self.changesWithHeaderForBindings = self.changes ?: @[];
 	}
 }
 
@@ -211,26 +224,33 @@
 
 
 
-- (NSCell*) tableView:(NSTableView*)aTableView 
+- (NSCell*) tableView:(NSTableView*)aTableView
 dataCellForTableColumn:(NSTableColumn*)aTableColumn
                   row:(NSInteger)rowIndex
 {
-	if (rowIndex == 0)
+	if (self.embedsHeaderInTable)
 	{
-		if (!aTableColumn) // return a cell spanning all the columns
+		if (rowIndex == 0)
 		{
-			return [self headerCell];
+			if (!aTableColumn) // return a cell spanning all the columns
+			{
+				return [self headerCell];
+			}
+			else
+			{
+				return nil;
+			}
 		}
-		else
-		{
-			return nil;
-		}
+
+		if (!aTableColumn) return nil;
+
+		rowIndex--; // adjust index for natural list of changes.
 	}
-	
-	if (!aTableColumn) return nil;
-	
-	rowIndex--; // adjust index for natural list of changes.
-	
+	else if (!aTableColumn)
+	{
+		return nil;
+	}
+
 	GBChange* change = [self.changes objectAtIndex:rowIndex];
 	
 	if ([aTableColumn.identifier isEqualToString:@"pathStatus"])
@@ -251,11 +271,10 @@ dataCellForTableColumn:(NSTableColumn*)aTableColumn
 
 - (CGFloat)tableView:(NSTableView *)tableView heightOfRow:(NSInteger)rowIndex
 {
-	if (rowIndex == 0)
+	if (self.embedsHeaderInTable && rowIndex == 0)
 	{
 		return [self headerHeight];
 	}
-	rowIndex--;
 	return [GBChangeCell cellHeight];
 }
 
@@ -286,7 +305,7 @@ dataCellForTableColumn:(NSTableColumn*)aTableColumn
 
 - (NSIndexSet *)tableView:(NSTableView *)aTableView selectionIndexesForProposedSelection:(NSIndexSet *)proposedSelectionIndexes
 {
-//	[self delaySetChanges];
+	if (!self.embedsHeaderInTable) return proposedSelectionIndexes;
 	return [proposedSelectionIndexes indexesPassingTest:^(NSUInteger index, BOOL* stop){
 		return (BOOL)(index != 0);
 	}];
@@ -300,7 +319,8 @@ dataCellForTableColumn:(NSTableColumn*)aTableColumn
 
 - (BOOL) tableView:(NSTableView*)aTableView writeRowsWithIndexes:(NSIndexSet*)indexSet toPasteboard:(NSPasteboard*)pasteboard
 {
-	NSArray* items = [[self.changesWithHeaderForBindings objectsAtIndexes:indexSet] valueForKey:@"pasteboardItem"];
+	NSArray* sourceArray = self.embedsHeaderInTable ? self.changesWithHeaderForBindings : self.changes;
+	NSArray* items = [[sourceArray objectsAtIndexes:indexSet] valueForKey:@"pasteboardItem"];
 	[pasteboard writeObjects:items];
 	return YES;
 }
@@ -381,7 +401,7 @@ dataCellForTableColumn:(NSTableColumn*)aTableColumn
 {
 	if (![[self selectedChanges] firstObject])
 	{
-		[self.statusArrayController setSelectionIndex:1];
+		[self.statusArrayController setSelectionIndex:(self.embedsHeaderInTable ? 1 : 0)];
 	}
 }
 
@@ -494,7 +514,8 @@ dataCellForTableColumn:(NSTableColumn*)aTableColumn
 		return NSZeroRect;
 	}
 	
-	NSRect rowRect = [self.tableView frameOfCellAtColumn:0 row:(index + 1)]; // +1 for the embedded header
+	NSInteger headerOffset = self.embedsHeaderInTable ? 1 : 0;
+	NSRect rowRect = [self.tableView frameOfCellAtColumn:0 row:(index + headerOffset)];
 	
 	// check that the icon rect is visible on screen
 	NSRect visibleRect = [self.tableView visibleRect];

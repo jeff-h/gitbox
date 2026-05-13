@@ -1,5 +1,3 @@
-#define StageHeaderAnimationDebug 0
-
 #import "GBGitConfig.h"
 #import "GBRepository.h"
 #import "GBRef.h"
@@ -16,37 +14,38 @@
 #import "GBMainWindowController.h"
 #import "GBRepositorySettingsController.h"
 
-#import "GBCellWithView.h"
-
 #import "NSArray+OAArrayHelpers.h"
 
-@class GBStageViewController;
 
-
-@interface GBStageHeaderAnimation : NSAnimation
-@property(nonatomic, copy) NSString* message;
-@property(nonatomic, weak) GBStageViewController* controller;
-@property(nonatomic, assign) NSRect headerFrame;
-@property(nonatomic, assign) NSRect textScrollViewFrame;
-@property(nonatomic, assign) CGFloat buttonAlpha;
-
-+ (GBStageHeaderAnimation*) animationWithController:(GBStageViewController*)ctrl;
-- (void) prepareAnimation;
-@end
-
-
+// Header layout constants — single source of truth.
+// Vertical stack from top to bottom:
+//   kFieldTopInset
+//   commit field (height variable: kIdleFieldHeight or kEditingFieldHeight)
+//   kFieldButtonGap          (in editing mode only; collapses to kBottomInset in idle)
+//   [commit button (only in editing mode)]
+//   kBottomInset
+static const CGFloat kFieldTopInset = 10.0;
+static const CGFloat kFieldHorizontalInset = 20.0;
+static const CGFloat kFieldButtonGap = 20.0;
+static const CGFloat kBottomInset = 20.0;
+static const CGFloat kCommitButtonHeight = 19.0;
+static const CGFloat kIdleFieldHeight = 23.0;
+static const CGFloat kEditingFieldHeight = 54.0;
+static const CGFloat kFieldBottomIdle = kBottomInset;                                               // field sits kBottomInset above card bottom
+static const CGFloat kFieldBottomEditing = kBottomInset + kCommitButtonHeight + kFieldButtonGap;    // room for button below field
+static const CGFloat kIdleHeaderHeight = kFieldTopInset + kIdleFieldHeight + kBottomInset;                                                          // 53
+static const CGFloat kEditingHeaderHeight = kFieldTopInset + kEditingFieldHeight + kFieldButtonGap + kCommitButtonHeight + kBottomInset;            // 123
 
 
 @interface GBStageViewController ()
 @property(nonatomic, strong) GBCommitPromptController* commitPromptController;
 @property(nonatomic, strong) NSIndexSet* rememberedSelectionIndexes;
-@property(nonatomic, strong) GBStageHeaderAnimation* headerAnimation;
-@property(nonatomic, strong) GBCellWithView* headerCell;
 @property(nonatomic, strong) GBStageShortcutHintDetector* shortcutHintDetector;
 @property(nonatomic, strong) GBStageMessageHistoryController* messageHistoryController;
 @property(nonatomic, strong) NSUndoManager* textViewUndoManager;
 @property(nonatomic, assign) BOOL alreadyValidatedUserNameAndEmail;
-@property(nonatomic, assign) CGFloat overridenHeaderHeight;
+@property(nonatomic, strong) NSLayoutConstraint* headerHeightConstraint;
+@property(nonatomic, strong) NSLayoutConstraint* fieldBottomConstraint;
 
 @property(weak, nonatomic, readonly) GBStage* stage;
 
@@ -75,8 +74,6 @@
 @synthesize commitButton;
 @synthesize commitPromptController;
 @synthesize rememberedSelectionIndexes;
-@synthesize headerAnimation;
-@synthesize headerCell;
 @synthesize shortcutHintLabel;
 @synthesize shortcutHintDetector;
 @synthesize messageHistoryController;
@@ -89,7 +86,6 @@
 
 
 @synthesize alreadyValidatedUserNameAndEmail;
-@synthesize overridenHeaderHeight;
 
 @dynamic stage;
 
@@ -127,13 +123,9 @@
 
 
 
-- (CGFloat) headerHeight
+- (BOOL) embedsHeaderInTable
 {
-	if (self.overridenHeaderHeight > 0.0)
-	{
-		return self.overridenHeaderHeight;
-	}
-	return [super headerHeight];
+	return NO;
 }
 
 
@@ -223,10 +215,9 @@
 	
 	[self.messageTextView setTextContainerInset:NSMakeSize(0.0, 3.0)];
 	[self.messageTextView setFont:[NSFont systemFontOfSize:12.0]];
-	
-	self.headerCell = [GBCellWithView cellWithView:self.headerView];
-	self.headerCell.verticalOffset = -1;
-	
+
+	[self setupHeaderLayout];
+
 	self.shortcutHintDetector = [GBStageShortcutHintDetector detectorWithView:self.shortcutHintLabel];
 	
 	[self updateViews];
@@ -672,7 +663,38 @@
 - (void) textView:(NSTextView*)aTextView willResignFirstResponder:(BOOL)result
 {
 	if (!result) return;
-	[self syncHeaderAfterLeaving];
+
+	// Check the *new* first responder on the next runloop tick — by then it has been set.
+	// If focus is still inside the stage column (file list, etc.) keep editing mode and just
+	// stash the current text. Only collapse when focus has left the column entirely.
+	__weak typeof(self) weakSelf = self;
+	dispatch_async(dispatch_get_main_queue(), ^{
+		typeof(self) strongSelf = weakSelf;
+		if (!strongSelf) return;
+
+		NSResponder* fr = strongSelf.view.window.firstResponder;
+		BOOL stillInColumn = ([fr isKindOfClass:[NSView class]] &&
+		                      [(NSView*)fr isDescendantOf:strongSelf.view]);
+		if (stillInColumn)
+		{
+			strongSelf.stage.currentCommitMessage = [[strongSelf.messageTextView string] copy];
+		}
+		else
+		{
+			[strongSelf syncHeaderAfterLeaving];
+		}
+	});
+}
+
+- (void) textDidBeginEditing:(NSNotification*)notification
+{
+	// User clicked / tabbed into the commit field. Move into editing mode and animate
+	// the card growing to make room for the Commit button.
+	if (self.stage.currentCommitMessage == nil)
+	{
+		self.stage.currentCommitMessage = [[self.messageTextView string] copy] ?: @"";
+	}
+	[self updateHeaderSizeAnimating:YES];
 }
 
 - (void) textView:(NSTextView*)aTextView didCancel:(id)sender
@@ -737,76 +759,76 @@
 	[[self.messageTextView enclosingScrollView] setHidden:rebaseConflict];
 }
 
+- (void) setupHeaderLayout
+{
+	NSScrollView* tableScrollView = self.tableView.enclosingScrollView;
+	NSView* container = self.view;
+
+	self.headerView.translatesAutoresizingMaskIntoConstraints = NO;
+	tableScrollView.translatesAutoresizingMaskIntoConstraints = NO;
+	[container addSubview:self.headerView];
+
+	self.headerHeightConstraint = [self.headerView.heightAnchor constraintEqualToConstant:kIdleHeaderHeight];
+
+	[NSLayoutConstraint activateConstraints:@[
+		[self.headerView.topAnchor constraintEqualToAnchor:container.topAnchor],
+		[self.headerView.leadingAnchor constraintEqualToAnchor:container.leadingAnchor],
+		[self.headerView.trailingAnchor constraintEqualToAnchor:container.trailingAnchor],
+		self.headerHeightConstraint,
+		[tableScrollView.topAnchor constraintEqualToAnchor:self.headerView.bottomAnchor],
+		[tableScrollView.leadingAnchor constraintEqualToAnchor:container.leadingAnchor],
+		[tableScrollView.trailingAnchor constraintEqualToAnchor:container.trailingAnchor],
+		[tableScrollView.bottomAnchor constraintEqualToAnchor:container.bottomAnchor],
+	]];
+
+	NSScrollView* commitScrollView = [self.messageTextView enclosingScrollView];
+	commitScrollView.translatesAutoresizingMaskIntoConstraints = NO;
+	self.commitButton.translatesAutoresizingMaskIntoConstraints = NO;
+	self.commitButton.hidden = YES;
+
+	// Field bottom sits a variable distance above the card bottom.
+	//   idle    → kBottomInset (no button)
+	//   editing → kBottomInset + button height + gap above button
+	self.fieldBottomConstraint = [commitScrollView.bottomAnchor constraintEqualToAnchor:self.headerView.bottomAnchor constant:-kFieldBottomIdle];
+
+	[NSLayoutConstraint activateConstraints:@[
+		[commitScrollView.topAnchor constraintEqualToAnchor:self.headerView.topAnchor constant:kFieldTopInset],
+		[commitScrollView.leadingAnchor constraintEqualToAnchor:self.headerView.leadingAnchor constant:kFieldHorizontalInset],
+		[commitScrollView.trailingAnchor constraintEqualToAnchor:self.headerView.trailingAnchor constant:-kFieldHorizontalInset],
+		self.fieldBottomConstraint,
+
+		[self.commitButton.bottomAnchor constraintEqualToAnchor:self.headerView.bottomAnchor constant:-kBottomInset],
+		[self.commitButton.trailingAnchor constraintEqualToAnchor:self.headerView.trailingAnchor constant:-kFieldHorizontalInset],
+		[self.commitButton.heightAnchor constraintEqualToConstant:kCommitButtonHeight],
+	]];
+}
+
 - (void) updateHeaderSizeAnimating:(BOOL)animating
 {
-	static CGFloat idleTextHeight = 14.0;
-	static CGFloat idleTextScrollViewHeight = 23.0;
-	static CGFloat idleHeaderViewHeight = 39.0;
-	static CGFloat bonusLineHeight = 11.0;
-	static CGFloat bottomButtonSpaceHeight = 24.0;
-	static CGFloat topPadding = 8.0;
-	
-	if (self.headerAnimation)
+	// `animating` is ignored — height changes are instant. The flag is kept so callers
+	// don't need updating, but animating the card height proved too prone to side-effects
+	// (textfield contents flickering, layout glitches when navigating away/back).
+	(void)animating;
+
+	BOOL editing = (self.stage.currentCommitMessage != nil);
+
+	if (editing)
 	{
-		[self.headerAnimation stopAnimation];
-		self.headerAnimation.controller = nil; // make sure animation does not touch us.
-		self.headerAnimation = nil;
-		self.headerCell.isViewManagementDisabled = NO;
-	}
-	
-	self.overridenHeaderHeight = 0.0;
-	self.headerCell.isViewManagementDisabled = NO;
-	
-	NSRect newHeaderFrame = self.headerView.frame;
-	NSRect newTextScrollViewFrame = [self.messageTextView enclosingScrollView].frame;
-	CGFloat textHeight = ceil([[self.messageTextView layoutManager] usedRectForTextContainer:[self.messageTextView textContainer]].size.height);
-	CGFloat newButtonAlpha = 0.0;
-	NSString* newMessage = nil;
-	
-	if (!self.stage.currentCommitMessage)
-	{
-		// idle mode: button hidden, textview has a single-line appearance
-		newHeaderFrame.size.height = textHeight + (idleHeaderViewHeight - idleTextHeight);
-		newTextScrollViewFrame.size.height = idleTextScrollViewHeight;
-		newButtonAlpha = 0.0;
-		newMessage = NSLocalizedString(@"Commit...", @"Commit");
-		[self.messageTextView setString:@""];
-		[self.messageTextView setTextColor:[NSColor disabledControlTextColor]];
+		[self.messageTextView setTextColor:[NSColor labelColor]];
+		self.headerHeightConstraint.constant = kEditingHeaderHeight;
+		self.fieldBottomConstraint.constant = -kFieldBottomEditing;
+		self.commitButton.hidden = NO;
 	}
 	else
 	{
-		// editing mode: textview has an additional line, button is visible
-		newHeaderFrame.size.height = textHeight + (idleHeaderViewHeight - idleTextHeight) + bonusLineHeight + bottomButtonSpaceHeight;
-		newTextScrollViewFrame.size.height = newHeaderFrame.size.height - (idleHeaderViewHeight - idleTextScrollViewHeight) - bottomButtonSpaceHeight;
-		newButtonAlpha = 1.0;
-		[self.messageTextView setTextColor:[NSColor blackColor]];
+		[self.messageTextView setString:NSLocalizedString(@"Commit...", @"Commit")];
+		[self.messageTextView setTextColor:[NSColor secondaryLabelColor]];
+		self.headerHeightConstraint.constant = kIdleHeaderHeight;
+		self.fieldBottomConstraint.constant = -kFieldBottomIdle;
+		self.commitButton.hidden = YES;
 	}
-	
-	newTextScrollViewFrame.origin.y = newHeaderFrame.size.height - newTextScrollViewFrame.size.height - topPadding;
-	
-	if (!animating)
-	{
-		self.overridenHeaderHeight = 0;
-		self.headerView.frame = newHeaderFrame;
-		//NSLog(@"%d: headerView frame = %@", __LINE__, NSStringFromRect(self.headerView.frame));
-		[self.messageTextView enclosingScrollView].frame = newTextScrollViewFrame;
-		if (newMessage) [self.messageTextView setString:newMessage];
-		[self.commitButton setHidden:newButtonAlpha < 0.5];
-		[self.tableView noteHeightOfRowsWithIndexesChanged:[NSIndexSet indexSetWithIndex:0]];
-		[[self.tableView enclosingScrollView] setFrame:[self.view bounds]];
-		//[[self.controller.tableView enclosingScrollView] adjustScroll:self.tableViewFrameInitial];
-	}
-	else
-	{
-		self.headerAnimation = [GBStageHeaderAnimation animationWithController:self];
-		// [self.headerAnimation setDelegate:self];
-		self.headerAnimation.headerFrame = newHeaderFrame;
-		self.headerAnimation.textScrollViewFrame = newTextScrollViewFrame;
-		self.headerAnimation.buttonAlpha = newButtonAlpha;
-		self.headerAnimation.message = newMessage;
-		[self.headerAnimation performSelector:@selector(startAnimation) withObject:nil afterDelay:0.01];
-	}
-	
+
+	[self.view layoutSubtreeIfNeeded];
 	[self updateCommitButtonEnabledState];
 }
 
@@ -931,280 +953,3 @@
 
 
 @end
-
-
-
-
-
-
-
-
-@interface GBStageHeaderAnimation ()
-@property(nonatomic, assign) NSRect headerFrameInitial;
-@property(nonatomic, assign) NSRect textScrollViewFrameInitial;
-@property(nonatomic, assign) CGFloat buttonAlphaInitial;
-@property(nonatomic, assign) CGFloat topPadding;
-@property(nonatomic, assign) CGFloat topPaddingInitial;
-@property(nonatomic, assign) NSRect tableViewFrame;
-@property(nonatomic, assign) NSRect tableViewFrameInitial;
-
-@end
-
-@implementation GBStageHeaderAnimation
-
-@synthesize message;
-@synthesize controller;
-@synthesize headerFrame;
-@synthesize headerFrameInitial;
-@synthesize textScrollViewFrame;
-@synthesize textScrollViewFrameInitial;
-@synthesize buttonAlpha;
-@synthesize buttonAlphaInitial;
-@synthesize topPadding;
-@synthesize topPaddingInitial;
-@synthesize tableViewFrame;
-@synthesize tableViewFrameInitial;
-
-
-- (void) dealloc
-{
-	[NSObject cancelPreviousPerformRequestsWithTarget:self];
-}
-
-+ (GBStageHeaderAnimation*) animationWithController:(GBStageViewController*)ctrl
-{  
-#if StageHeaderAnimationDebug
-	static float duration = 1.3; // debug!
-	static float frames = 5.0; // debug!
-#else
-	static float duration = 0.1;
-	static float frames = 5.0;
-#endif
-	
-	GBStageHeaderAnimation* animation = [[self alloc] initWithDuration:duration animationCurve:NSAnimationEaseIn];
-	animation.controller = ctrl;
-	[animation setAnimationBlockingMode:NSAnimationNonblocking];
-	[animation setFrameRate:MAX(frames/duration, 30.0)];
-#if StageHeaderAnimationDebug
-	[animation setFrameRate:frames/duration]; // debug!
-#endif
-	return animation;
-}
-
-- (NSArray*) runLoopModesForAnimating
-{
-	return [NSArray arrayWithObject:NSRunLoopCommonModes];
-}
-
-- (void) setCurrentProgress:(NSAnimationProgress)progress // 0.0 .. 1.0
-{
-	// Call super to update the progress value.
-	[super setCurrentProgress:progress];
-	
-	float p = [self currentValue];
-	
-	//NSLog(@"t = %f; p = %f", (double)progress, (double)p);
-	
-	//NSInteger currentFrame = (NSInteger)round(progress*[self frameRate]*[self duration]);
-	
-	NSRect newHeaderFrame = self.headerFrame;
-	NSRect newTextScrollViewFrame = self.textScrollViewFrame;
-	NSRect newTableViewFrame = self.tableViewFrame;
-	CGFloat newButtonAlpha = self.buttonAlpha;
-	
-	if (progress < 0.99) // otherwise there will be just final frame sizes
-	{
-		newHeaderFrame.size.height = round(p*newHeaderFrame.size.height + (1.0-p)*self.headerFrameInitial.size.height);
-		newHeaderFrame.origin.y = round(p*newHeaderFrame.origin.y + (1.0-p)*self.headerFrameInitial.origin.y);
-		newTextScrollViewFrame.size.height = round(p*newTextScrollViewFrame.size.height + (1.0-p)*self.textScrollViewFrameInitial.size.height);
-		CGFloat currentTopPadding = round(p*self.topPadding + (1-p)*self.topPaddingInitial);
-		newTextScrollViewFrame.origin.y = newHeaderFrame.size.height - newTextScrollViewFrame.size.height - currentTopPadding;
-		newButtonAlpha = p*newButtonAlpha + (1-p)*self.buttonAlphaInitial;
-		
-		newTableViewFrame.origin.y = round(p*newTableViewFrame.origin.y + (1-p)*self.tableViewFrameInitial.origin.y);
-		newTableViewFrame.size.height = round(p*newTableViewFrame.size.height + (1-p)*self.tableViewFrameInitial.size.height);
-	}
-	
-	self.controller.headerView.frame = newHeaderFrame;
-	[self.controller.messageTextView enclosingScrollView].frame = newTextScrollViewFrame;
-	[[self.controller.tableView enclosingScrollView] setFrame:newTableViewFrame];
-	
-	//NSLog(@"ANIM: %0.3f: newTableViewFrame frame = %@", progress, NSStringFromRect([[self.controller.tableView enclosingScrollView] frame]));
-	
-	// alpha animation sucks? [self.controller.commitButton setAlphaValue:newButtonAlpha];
-	
-	if (newButtonAlpha > 0.4)
-	{
-		[self.controller.commitButton setHidden:NO];
-	}
-	else
-	{
-		[self.controller.commitButton setHidden:YES];
-	}
-	
-	if (progress > 0.99)
-	{
-		self.controller.overridenHeaderHeight = 0;
-		if (self.message)
-		{
-			[self.controller.messageTextView setString:self.message];
-		}
-		self.controller.headerCell.isViewManagementDisabled = NO;
-		[[self.controller.tableView enclosingScrollView] setFrame:[self.controller.view bounds]];
-		[self.controller.tableView noteHeightOfRowsWithIndexesChanged:[NSIndexSet indexSetWithIndex:0]];
-		
-		if (self.controller.commitButton.isHidden == NO)
-		{
-			NSTableView* aTableView = self.controller.tableView;
-			double delayInSeconds = 0.1;
-			dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
-			dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-				[aTableView scrollToBeginningOfDocument:nil];
-			});
-			
-		}
-		self.controller.headerAnimation = nil;
-		self.controller = nil; // detach controller so we don't modify it accidentally
-		//NSLog(@"%d: headerView frame = %@", __LINE__, NSStringFromRect(self.controller.headerView.frame));
-	}
-}
-
-- (void) prepareAnimation
-{
-	self.headerFrameInitial = self.controller.headerView.frame;
-	self.textScrollViewFrameInitial = [self.controller.messageTextView enclosingScrollView].frame;
-	
-	self.topPaddingInitial = round(self.headerFrameInitial.size.height - self.textScrollViewFrameInitial.origin.y - self.textScrollViewFrameInitial.size.height);
-	self.topPadding = round(self.headerFrame.size.height - self.textScrollViewFrame.origin.y - self.textScrollViewFrame.size.height);
-	
-	self.buttonAlphaInitial = [self.controller.commitButton isHidden] ? 0.0 : 1.0;
-	
-	
-	// Three steps of animation:
-	
-	// 1. Prepare and set fake frames immediately
-	// 2. Animate to another (possibly fake) position
-	// 3. When animation finishes, apply final, correct animation.
-	
-	CGFloat headerHeightDelta = self.headerFrame.size.height - self.headerFrameInitial.size.height;
-	
-	//  NSLog(@"headerHeightDelta = %f", headerHeightDelta);
-	
-	// Case 1: Expanding header
-	if (headerHeightDelta > 0)
-	{
-		// 1. Resize tableview to go beyond top edge
-		// 2. Resize first row 
-		// 3. Prepare initial and final frame for tableview for animation
-		// 4. Prepare initial and final frame for the header for animation
-		
-		self.controller.overridenHeaderHeight = self.headerFrame.size.height;
-		
-		self.tableViewFrame = self.controller.view.bounds;
-		
-		{
-			NSRect f = self.tableViewFrame;
-			f.size.height += headerHeightDelta; // pushing table view beyond top (non-flipped coordinates)
-			self.tableViewFrameInitial = f;
-			f.origin.y -= headerHeightDelta; // avoid animating height of the tableView because it adjusts scrolling when content is smaller and animation becomes out of sync with headerView. The proper height will be set at the end of the animation.
-			self.tableViewFrame = f;
-		}
-		
-		{
-			//NSLog(@"headerFrame: %@ [%d]", NSStringFromRect(self.headerFrameInitial), __LINE__);
-			NSRect f = self.headerFrameInitial;
-			f.origin.y = headerHeightDelta; //compensation for our trick (flipped coordinates)
-			self.headerFrameInitial = f;
-		}
-	}
-	else // Case 2: Collapsing header
-	{
-		// 1. Resize tableview to go below bottom edge
-		// 2. Prepare initial and final frame for tableview for animation
-		// 3. Prepare initial and final frame for the header for animation
-		// 4. After animation, resize first row and whole frame to the correct position.
-		
-		self.controller.overridenHeaderHeight = self.headerFrameInitial.size.height;
-		
-		self.tableViewFrame = [[self.controller view] bounds];
-		
-		// I go out of my mind if this delta is negative. Let's keep it simple even if someone will tell me it's not mathematically pure. Fuck that.
-		headerHeightDelta = -headerHeightDelta;
-		
-		{
-			NSRect f = self.tableViewFrame;
-			f.size.height += headerHeightDelta; // pushing table view beyond bottom (non-flipped coordinates)
-			f.origin.y -= headerHeightDelta;
-			self.tableViewFrameInitial = f;
-			
-			f.origin.y = 0;
-			self.tableViewFrame = f;
-		}
-		
-		{
-			NSRect f = self.headerFrameInitial;
-			f.origin.y = 0;
-			self.headerFrameInitial = f;
-			f = self.headerFrame;
-			f.origin.y = headerHeightDelta;
-			self.headerFrame = f;
-		}
-	}
-	
-	//  NSLog(@"before prepareAnimation: headerView.frame = %@", NSStringFromRect([self.controller.headerView frame]));
-	//  NSLog(@"before prepareAnimation: scrollView.frame = %@", NSStringFromRect([[self.controller.tableView enclosingScrollView] frame]));
-	//  NSLog(@"before prepareAnimation: tableView.frame = %@", NSStringFromRect([self.controller.tableView frame]));
-    
-	self.controller.headerCell.isViewManagementDisabled = YES;
-    
-	//self.tableViewFrameInitial = NSInsetRect(self.tableViewFrameInitial, 50.0, 150.0);
-	//self.tableViewFrame = NSInsetRect(self.tableViewFrame, 50.0, 150.0);
-	
-	[[self.controller.tableView enclosingScrollView] setFrame:self.tableViewFrameInitial];
-	[self.controller.tableView noteHeightOfRowsWithIndexesChanged:[NSIndexSet indexSetWithIndex:0]];
-	[[self.controller.tableView enclosingScrollView] adjustScroll:self.tableViewFrameInitial];
-	
-	if (![self.controller.headerView superview])
-	{
-		[self.controller.tableView addSubview:self.controller.headerView];
-	}
-	[self.controller.headerView setFrame:self.headerFrameInitial];
-	
-	//  NSLog(@"in prepareAnimation: headerView.frame = %@", NSStringFromRect([self.controller.headerView frame]));
-	
-	//  NSLog(@"after prepareAnimation: headerView.frame = %@", NSStringFromRect([self.controller.headerView frame]));
-	//  NSLog(@"after prepareAnimation: scrollView.frame = %@", NSStringFromRect([[self.controller.tableView enclosingScrollView] frame]));
-	//  NSLog(@"after prepareAnimation: tableView.frame = %@", NSStringFromRect([self.controller.tableView frame]));
-	
-	//  [self.controller.tableView setNeedsDisplay:YES];
-	//  [[self.controller.tableView enclosingScrollView] setNeedsDisplay:YES];
-	//  [self.controller.tableView displayIfNeeded];
-	//  [[self.controller.tableView enclosingScrollView] displayIfNeeded];
-}
-
-- (void) startAnimation
-{
-	[self prepareAnimation];
-#if StageHeaderAnimationDebug
-	//[super performSelector:@selector(startAnimation) withObject:nil afterDelay:0.9];
-	[super startAnimation];
-#else
-	[super startAnimation];
-#endif  
-}
-
-- (void) stopAnimation
-{
-	[NSObject cancelPreviousPerformRequestsWithTarget:self];
-	self.controller.headerCell.isViewManagementDisabled = NO;
-	//  NSLog(@"%d: headerView frame = %@", __LINE__, NSStringFromRect(self.controller.headerView.frame));
-	[super stopAnimation];
-}
-
-@end
-
-
-
-
-
-

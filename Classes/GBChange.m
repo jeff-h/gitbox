@@ -15,6 +15,8 @@
 #import "NSFileManager+OAFileManagerHelpers.h"
 #import "NSError+OAPresent.h"
 
+#import "gitbox-Swift.h"
+
 
 #define GBChangeDeveloperDirForOpendiff @"GBChangeDeveloperDirForOpendiff"
 
@@ -102,19 +104,20 @@
 
 + (NSString*) defaultDiffTool
 {
-	return @"FileMerge";
+	return @"Built-in";
 }
 
 + (NSArray*) diffTools
 {
-	return [NSArray arrayWithObjects:@"FileMerge", 
+	return [NSArray arrayWithObjects:@"Built-in",
+			@"FileMerge",
 			@"Kaleidoscope",
-			@"Changes", 
+			@"Changes",
 			@"Araxis Merge",
-			@"BBEdit", 
+			@"BBEdit",
 			@"TextWrangler",
 			@"DiffMerge",
-			//NSLocalizedString(@"Other (full path to executable):", @"Change"), 
+			//NSLocalizedString(@"Other (full path to executable):", @"Change"),
 			nil];
 }
 
@@ -460,13 +463,25 @@
 		return;
 	}
 	
-	OATask* task = [OATask task];
-	
 	NSString* diffTool = [[NSUserDefaults standardUserDefaults] stringForKey:kGBChangeDiffToolKey];
 	NSString* diffToolLaunchPath = [[NSUserDefaults standardUserDefaults] stringForKey:@"diffToolLaunchPath"];
-	
-	if (!diffTool) diffTool = @"FileMerge";
-	
+
+	if (!diffTool) diffTool = @"Built-in";
+
+	if ([diffTool isEqualToString:@"Built-in"])
+	{
+		NSString* displayPath = [[self fileURL] relativePath] ?: [[self fileURL] path] ?: @"";
+		GBBuiltinDiffWindowController* wc =
+			[[GBBuiltinDiffWindowController alloc] initWithLeftURL:leftURL
+														  rightURL:rightURL
+													   displayPath:displayPath];
+		[wc runModalSheetOver:[NSApp keyWindow] ?: [NSApp mainWindow]];
+		if (block) block();
+		return;
+	}
+
+	OATask* task = [OATask task];
+
 	if ([diffTool isEqualToString:@"FileMerge"])
 	{
 		task.executableName = @"opendiff";

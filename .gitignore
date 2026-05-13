@@ -26,3 +26,7 @@ openssl/bin
 # Claude Code
 .claude/
 
+
+# Bundled Monaco editor — fetched by scripts/fetch-monaco.sh
+Resources/MonacoDiff/vs/
+Resources/MonacoDiff/.monaco-version

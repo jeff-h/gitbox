@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"/>
+<style>
+  html, body, #container { height: 100%; margin: 0; padding: 0; }
+  body { background: #ffffff; }
+  body.dark { background: #1e1e1e; }
+  #status { position: absolute; top: 8px; right: 12px; font: 12px -apple-system; opacity: 0.6; }
+  /* Suppress Monaco's "Cannot edit in read-only editor" overlay — feels
+     un-Mac-like; native code emits NSBeep instead via the readonly handler. */
+  .monaco-editor-overlaymessage { display: none !important; }
+</style>
+<link rel="stylesheet" data-name="vs/editor/editor.main" href="vs/editor/editor.main.css"/>
+</head>
+<body>
+<div id="container"></div>
+<div id="status">loading…</div>
+<script src="vs/loader.js"></script>
+<script>
+  var pending = null;
+  require.config({ paths: { 'vs': 'vs' }});
+  require(['vs/editor/editor.main'], function() {
+    var s = document.getElementById('status'); if (s) s.remove();
+    window.__monacoReady = true;
+    if (pending) { window.__gbLoadDiff(pending); pending = null; }
+  });
+  function postBeep() {
+    try { window.webkit.messageHandlers.gbReadOnlyBeep.postMessage({}); } catch (e) {}
+  }
+  // Forward Escape to native so Monaco / WKWebView don't swallow it before
+  // it reaches the responder chain. Capture phase beats Monaco's listeners.
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && !e.metaKey && !e.ctrlKey && !e.altKey && !e.shiftKey) {
+      e.preventDefault();
+      try { window.webkit.messageHandlers.gbCloseSheet.postMessage({}); } catch (err) {}
+    }
+  }, true);
+  window.__gbLoadDiff = function(p) {
+    if (!window.__monacoReady) { pending = p; return; }
+    if (p.theme === 'vs-dark') document.body.classList.add('dark');
+    var orig = monaco.editor.createModel(p.left  || '', p.language || 'plaintext');
+    var modd = monaco.editor.createModel(p.right || '', p.language || 'plaintext');
+    var ed = monaco.editor.createDiffEditor(document.getElementById('container'), {
+      theme: p.theme || 'vs',
+      automaticLayout: true,
+      renderSideBySide: true,
+      readOnly: true,
+      originalEditable: false,
+      renderWhitespace: 'selection',
+      ignoreTrimWhitespace: false,
+      scrollBeyondLastLine: false,
+      readOnlyMessage: { value: '' },
+    });
+    ed.setModel({ original: orig, modified: modd });
+
+    // Wire a NSBeep on any keypress that would have triggered an edit.
+    function wireBeep(codeEditor) {
+      var dom = codeEditor.getDomNode();
+      if (!dom) return;
+      dom.addEventListener('keydown', function(e) {
+        // Ignore pure navigation / modifier-only keys.
+        if (e.metaKey && (e.key === 'c' || e.key === 'a' || e.key === 'f')) return;
+        if (e.key && e.key.length === 1) postBeep();
+      }, true);
+    }
+    wireBeep(ed.getOriginalEditor());
+    wireBeep(ed.getModifiedEditor());
+
+    // Pre-scroll to the first diff change so users land on the change
+    // instead of the top of the file.
+    var revealed = false;
+    function revealFirst() {
+      if (revealed) return;
+      var changes = ed.getLineChanges();
+      if (!changes || !changes.length) return;
+      revealed = true;
+      var c = changes[0];
+      var modLine = c.modifiedStartLineNumber || 1;
+      var origLine = c.originalStartLineNumber || 1;
+      ed.getModifiedEditor().revealLineNearTop(modLine);
+      ed.getOriginalEditor().revealLineNearTop(origLine);
+    }
+    ed.onDidUpdateDiff(revealFirst);
+    // Fallback in case diff is computed synchronously before listener attaches.
+    setTimeout(revealFirst, 50);
+  };
+</script>
+</body></html>

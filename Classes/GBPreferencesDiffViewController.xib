@@ -22,10 +22,10 @@
                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                     <subviews>
                         <matrix verticalHuggingPriority="750" fixedFrame="YES" tag="1" allowsEmptySelection="NO" translatesAutoresizingMaskIntoConstraints="NO" id="27">
-                            <rect key="frame" x="188" y="87" width="234" height="173"/>
+                            <rect key="frame" x="188" y="86" width="234" height="174"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                            <size key="cellSize" width="234" height="23"/>
+                            <size key="cellSize" width="234" height="20"/>
                             <size key="intercellSpacing" width="4" height="2"/>
                             <buttonCell key="prototype" type="radio" title="Radio" imagePosition="leading" alignment="left" inset="2" id="46">
                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -33,7 +33,11 @@
                             </buttonCell>
                             <cells>
                                 <column>
-                                    <buttonCell type="radio" title="FileMerge" imagePosition="leading" alignment="left" state="on" tag="201" inset="2" id="45">
+                                    <buttonCell type="radio" title="Built-in" imagePosition="leading" alignment="left" state="on" inset="2" id="builtinDiffCell">
+                                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                        <font key="font" metaFont="system"/>
+                                    </buttonCell>
+                                    <buttonCell type="radio" title="FileMerge" imagePosition="leading" alignment="left" tag="201" inset="2" id="45">
                                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                         <font key="font" metaFont="system"/>
                                         <connections>

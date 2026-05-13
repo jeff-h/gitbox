@@ -268,6 +268,7 @@
 		208D0C5D139AB3F6002C8072 /* GBRepositoryBranchesAndTagsController.m in Sources */ = {isa = PBXBuildFile; fileRef = 208D0C5C139AB3F6002C8072 /* GBRepositoryBranchesAndTagsController.m */; };
 		208D0C5E139AB3F6002C8072 /* GBRepositoryBranchesAndTagsController.m in Sources */ = {isa = PBXBuildFile; fileRef = 208D0C5C139AB3F6002C8072 /* GBRepositoryBranchesAndTagsController.m */; };
 		20915EBC12874D2A005E0D82 /* default_gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 209A960011BC60BC006B0B5C /* default_gitignore */; };
+		6BD7E945E3FE48EF83D33128 /* MonacoDiff in Resources */ = {isa = PBXBuildFile; fileRef = 26E19EBA78BD42C585664087 /* MonacoDiff */; };
 		20915EBD12874D2A005E0D82 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C1660FE840EACC02AAC07 /* InfoPlist.strings */; };
 		20915EBE12874D2A005E0D82 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1DDD582B0DA1D0D100B32029 /* MainMenu.xib */; };
 		20915EC012874D2A005E0D82 /* GBPromptController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 20B8B83811A4A72A006D6442 /* GBPromptController.xib */; };
@@ -378,6 +379,7 @@
 		209A935A11BA92B6006B0B5C /* GBFileEditingController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 209A935911BA92B6006B0B5C /* GBFileEditingController.xib */; };
 		209A935F11BA934C006B0B5C /* GBFileEditingController.m in Sources */ = {isa = PBXBuildFile; fileRef = 209A935E11BA934C006B0B5C /* GBFileEditingController.m */; };
 		209A963E11BC630C006B0B5C /* default_gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 209A960011BC60BC006B0B5C /* default_gitignore */; };
+		E3EF49AE2E9D4E7A917C06A5 /* MonacoDiff in Resources */ = {isa = PBXBuildFile; fileRef = 26E19EBA78BD42C585664087 /* MonacoDiff */; };
 		209C16571290636300B343A5 /* NSError+OAPresent.m in Sources */ = {isa = PBXBuildFile; fileRef = 209C16561290636300B343A5 /* NSError+OAPresent.m */; };
 		209C16581290636300B343A5 /* NSError+OAPresent.m in Sources */ = {isa = PBXBuildFile; fileRef = 209C16561290636300B343A5 /* NSError+OAPresent.m */; };
 		209C192412B802C900F56A54 /* GBCellWithView.m in Sources */ = {isa = PBXBuildFile; fileRef = 209C192312B802C900F56A54 /* GBCellWithView.m */; };
@@ -513,6 +515,8 @@
 		6FAD35392F71550E00C09C6B /* GBBadgeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FAD35372F71550E00C09C6B /* GBBadgeView.swift */; };
 		6FCC000B2F8A000100C09C6B /* GBColumnWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FCC000A2F8A000100C09C6B /* GBColumnWindowController.swift */; };
 		6FCC000C2F8A000100C09C6B /* GBColumnWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FCC000A2F8A000100C09C6B /* GBColumnWindowController.swift */; };
+		B32FAB8B0AC54091ACF586C0 /* GBBuiltinDiffWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 310F8D6E82264948B156BE4E /* GBBuiltinDiffWindowController.swift */; };
+		D63C2D30557A4DEDAF1443DB /* GBBuiltinDiffWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 310F8D6E82264948B156BE4E /* GBBuiltinDiffWindowController.swift */; };
 		70865D2B12D25F5F00033683 /* GBSubmodule.m in Sources */ = {isa = PBXBuildFile; fileRef = 70865D2A12D25F5F00033683 /* GBSubmodule.m */; };
 		70EEC8D012DFE33E00DD1555 /* GBSubmodulesTask.m in Sources */ = {isa = PBXBuildFile; fileRef = 70EEC8CF12DFE33E00DD1555 /* GBSubmodulesTask.m */; };
 		8D15AC320486D014006FF6A4 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A37F4B0FDCFA73011CA2CEA /* main.m */; settings = {ATTRIBUTES = (); }; };
@@ -857,6 +861,7 @@
 		209A935D11BA934C006B0B5C /* GBFileEditingController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GBFileEditingController.h; sourceTree = "<group>"; };
 		209A935E11BA934C006B0B5C /* GBFileEditingController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GBFileEditingController.m; sourceTree = "<group>"; };
 		209A960011BC60BC006B0B5C /* default_gitignore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = default_gitignore; sourceTree = "<group>"; };
+		26E19EBA78BD42C585664087 /* MonacoDiff */ = {isa = PBXFileReference; lastKnownFileType = folder; name = MonacoDiff; path = Resources/MonacoDiff; sourceTree = SOURCE_ROOT; };
 		209C16551290636300B343A5 /* NSError+OAPresent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSError+OAPresent.h"; sourceTree = "<group>"; };
 		209C16561290636300B343A5 /* NSError+OAPresent.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSError+OAPresent.m"; sourceTree = "<group>"; };
 		209C192212B802C900F56A54 /* GBCellWithView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GBCellWithView.h; sourceTree = "<group>"; };
@@ -1000,6 +1005,7 @@
 		6FAD35362F71550000C09C6B /* Gitbox-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Gitbox-Bridging-Header.h"; sourceTree = "<group>"; };
 		6FAD35372F71550E00C09C6B /* GBBadgeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GBBadgeView.swift; sourceTree = "<group>"; };
 		6FCC000A2F8A000100C09C6B /* GBColumnWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GBColumnWindowController.swift; sourceTree = "<group>"; };
+		310F8D6E82264948B156BE4E /* GBBuiltinDiffWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GBBuiltinDiffWindowController.swift; sourceTree = "<group>"; };
 		70865D2912D25F5F00033683 /* GBSubmodule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GBSubmodule.h; sourceTree = "<group>"; };
 		70865D2A12D25F5F00033683 /* GBSubmodule.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GBSubmodule.m; sourceTree = "<group>"; };
 		70EEC8CE12DFE33E00DD1555 /* GBSubmodulesTask.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GBSubmodulesTask.h; sourceTree = "<group>"; };
@@ -1403,6 +1409,7 @@
 				6FAD35322F7154D300C09C6B /* GBSidebarCellView.swift */,
 				6FAD35372F71550E00C09C6B /* GBBadgeView.swift */,
 				6FCC000A2F8A000100C09C6B /* GBColumnWindowController.swift */,
+				310F8D6E82264948B156BE4E /* GBBuiltinDiffWindowController.swift */,
 				20A37BA4120DC1D90068AB8B /* GBSidebarController.h */,
 				20A37BA5120DC1D90068AB8B /* GBSidebarController.m */,
 				20A37BB5120DC7640068AB8B /* GBSidebarController.xib */,
@@ -1783,6 +1790,7 @@
 				089C1660FE840EACC02AAC07 /* InfoPlist.strings */,
 				2057F0D611ACF075009EDF2F /* sparkle_dsa_pub.pem */,
 				209A960011BC60BC006B0B5C /* default_gitignore */,
+				26E19EBA78BD42C585664087 /* MonacoDiff */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -1805,6 +1813,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 20915F3112874D2A005E0D82 /* Build configuration list for PBXNativeTarget "Gitbox AppStore" */;
 			buildPhases = (
+				9EC748F9A84240E38016EA3D /* Fetch Monaco */,
 				20915EBB12874D2A005E0D82 /* Resources */,
 				20915EDA12874D2A005E0D82 /* Sources */,
 				20915F2912874D2A005E0D82 /* Frameworks */,
@@ -1824,6 +1833,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = C05733C708A9546B00998B17 /* Build configuration list for PBXNativeTarget "Gitbox" */;
 			buildPhases = (
+				D85F40925B68448FBF1C1890 /* Fetch Monaco */,
 				8D15AC2B0486D014006FF6A4 /* Resources */,
 				8D15AC300486D014006FF6A4 /* Sources */,
 				8D15AC330486D014006FF6A4 /* Frameworks */,
@@ -1887,6 +1897,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				20915EBC12874D2A005E0D82 /* default_gitignore in Resources */,
+				6BD7E945E3FE48EF83D33128 /* MonacoDiff in Resources */,
 				20915EBD12874D2A005E0D82 /* InfoPlist.strings in Resources */,
 				20915EBE12874D2A005E0D82 /* MainMenu.xib in Resources */,
 				20915EC012874D2A005E0D82 /* GBPromptController.xib in Resources */,
@@ -1969,6 +1980,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				209A963E11BC630C006B0B5C /* default_gitignore in Resources */,
+				E3EF49AE2E9D4E7A917C06A5 /* MonacoDiff in Resources */,
 				2038F1B3119366660087CE37 /* InfoPlist.strings in Resources */,
 				2038F1B7119366960087CE37 /* MainMenu.xib in Resources */,
 				20B8B83911A4A72A006D6442 /* GBPromptController.xib in Resources */,
@@ -2089,6 +2101,38 @@
 			shellScript = "touch $PROJECT_DIR/info.plist\n";
 			showEnvVarsInLog = 0;
 		};
+		D85F40925B68448FBF1C1890 /* Fetch Monaco */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/scripts/fetch-monaco.sh",
+			);
+			name = "Fetch Monaco";
+			outputPaths = (
+				"$(SRCROOT)/Resources/MonacoDiff/.monaco-version",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/bash;
+			shellScript = "\"$SRCROOT/scripts/fetch-monaco.sh\"\n";
+		};
+		9EC748F9A84240E38016EA3D /* Fetch Monaco */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/scripts/fetch-monaco.sh",
+			);
+			name = "Fetch Monaco";
+			outputPaths = (
+				"$(SRCROOT)/Resources/MonacoDiff/.monaco-version",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/bash;
+			shellScript = "\"$SRCROOT/scripts/fetch-monaco.sh\"\n";
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -2178,6 +2222,7 @@
 				2016464F12D0C2F6005C69DA /* GBUserpicController.m in Sources */,
 				6FAD35342F7154D300C09C6B /* GBSidebarCellView.swift in Sources */,
 				6FCC000B2F8A000100C09C6B /* GBColumnWindowController.swift in Sources */,
+				B32FAB8B0AC54091ACF586C0 /* GBBuiltinDiffWindowController.swift in Sources */,
 				2016466312D0D0EC005C69DA /* OAHTTPDownload.m in Sources */,
 				2016466412D0D0EC005C69DA /* OAHTTPQueue.m in Sources */,
 				2016466512D0D0EC005C69DA /* OAXMLDecoder.m in Sources */,
@@ -2297,6 +2342,7 @@
 				2093AC8711B2EB9100239185 /* GBCommitPromptController.m in Sources */,
 				6FAD35332F7154D300C09C6B /* GBSidebarCellView.swift in Sources */,
 				6FCC000C2F8A000100C09C6B /* GBColumnWindowController.swift in Sources */,
+				D63C2D30557A4DEDAF1443DB /* GBBuiltinDiffWindowController.swift in Sources */,
 				200B08B511B6E359004C09A8 /* GBLocalRemoteAssociationTask.m in Sources */,
 				20B399FA11B7F30600D6A3C4 /* GBLocalRefsTask.m in Sources */,
 				209A935F11BA934C006B0B5C /* GBFileEditingController.m in Sources */,

@@ -91,6 +91,12 @@
 	[self.tableView setDraggingSourceOperationMask:NSDragOperationNone forLocal:YES];
 	[self.tableView setDraggingSourceOperationMask:NSDragOperationCopy forLocal:NO];
 	[self.tableView setVerticalMotionCanBeginDrag:YES];
+
+	// Bottom breathing room so the last file isn't flush with the window edge
+	// when the commit message is long enough to fill the pane.
+	NSScrollView* fileScroll = self.tableView.enclosingScrollView;
+	fileScroll.automaticallyAdjustsContentInsets = NO;
+	fileScroll.contentInsets = NSEdgeInsetsMake(0, 0, 40, 0);
 	
 	NSDictionary* linkAttrs = [NSDictionary dictionaryWithObjectsAndKeys:                                              
 							   [GBStyle linkColor], NSForegroundColorAttributeName, 

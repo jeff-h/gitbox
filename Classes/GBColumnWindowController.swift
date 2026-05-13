@@ -88,7 +88,33 @@ import AppKit
 
         // Replace the XIB content (NSBox + old NSSplitView) with our
         // NSSplitViewController. The toolbar is window-level so it survives.
+        // Assigning contentViewController resizes the window to fit the
+        // content view's intrinsic size, so we re-apply the autosaved frame
+        // immediately after.
+        // The xib's frameAutosaveName has already restored the saved frame
+        // by the time windowDidLoad runs. But assigning contentViewController
+        // triggers an Auto Layout pass that shrinks the window to the
+        // content's intrinsic size — and the live autosave callback then
+        // overwrites the persisted frame with that shrunken size. So we
+        // capture the restored frame here, do the contentViewController
+        // dance, then restore it.
+        // Don't use NSWindow.frameAutosaveName / setFrameUsingName:
+        // - setFrameUsingName silently calls constrainFrameRect on each load,
+        //   which shifts y down by the toolbar+title height every launch.
+        // - Setting contentViewController triggers an Auto Layout pass that
+        //   resizes the window to splitVC's intrinsic size and would also
+        //   clobber the autosaved value mid-launch.
+        // Instead, parse defaults ourselves and apply via setFrame:display:
+        // (which doesn't shift), then persist manually on resize/move/close.
+        shouldCascadeWindows = false
+        self.windowFrameAutosaveName = ""
+        let savedFrame = Self.readSavedFrame()
+
         window.contentViewController = splitVC
+        if let f = savedFrame {
+            window.setFrame(f, display: false)
+        }
+        startObservingFrameForPersistence(window: window)
 
         // Point the inherited splitView property at the new split view.
         // This is critical: the superclass's private `sidebarView` and
@@ -173,6 +199,32 @@ import AppKit
                 vc.view.autoresizingMask = [.width, .height]
                 vc.nextResponder = sidebarController
             }
+        }
+    }
+
+    // MARK: - Window frame persistence
+
+    private static let frameDefaultsKey = "GBMainWindowFrame"
+
+    private static func readSavedFrame() -> NSRect? {
+        guard let s = UserDefaults.standard.string(forKey: frameDefaultsKey) else { return nil }
+        let parts = s.split(separator: " ").compactMap { Double($0) }
+        guard parts.count >= 4 else { return nil }
+        return NSRect(x: parts[0], y: parts[1], width: parts[2], height: parts[3])
+    }
+
+    private func saveFrame(_ frame: NSRect) {
+        let s = "\(Int(frame.origin.x)) \(Int(frame.origin.y)) \(Int(frame.size.width)) \(Int(frame.size.height))"
+        UserDefaults.standard.set(s, forKey: Self.frameDefaultsKey)
+    }
+
+    private func startObservingFrameForPersistence(window: NSWindow) {
+        let nc = NotificationCenter.default
+        nc.addObserver(forName: NSWindow.didResizeNotification, object: window, queue: .main) { [weak self] _ in
+            self?.saveFrame(window.frame)
+        }
+        nc.addObserver(forName: NSWindow.didMoveNotification, object: window, queue: .main) { [weak self] _ in
+            self?.saveFrame(window.frame)
         }
     }
 }

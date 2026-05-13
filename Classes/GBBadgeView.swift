@@ -75,14 +75,14 @@ class GBBadgeView: NSView {
             return .white
         }
         if isWindowForeground {
-            return .controlAccentColor
+            return .secondaryLabelColor
         }
         return .tertiaryLabelColor
     }
 
     private var textColor: NSColor {
         if isEmphasised {
-            return .controlAccentColor
+            return .secondaryLabelColor
         }
         return .white
     }

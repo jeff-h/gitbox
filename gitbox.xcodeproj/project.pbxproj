@@ -288,9 +288,6 @@
 		20915ECE12874D2A005E0D82 /* GBSidebarController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 20A37BB5120DC7640068AB8B /* GBSidebarController.xib */; };
 		20915ECF12874D2A005E0D82 /* GBMainWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 20A37BBD120DDBA60068AB8B /* GBMainWindowController.xib */; };
 		20915ED112874D2A005E0D82 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 203976631251A63700770D13 /* Credits.rtf */; };
-		20915ED212874D2A005E0D82 /* GBCommitCellMarkerHighlighted.png in Resources */ = {isa = PBXBuildFile; fileRef = 20C3B70B125BCCC600ABEDE7 /* GBCommitCellMarkerHighlighted.png */; };
-		20915ED412874D2A005E0D82 /* GBCommitCellMarkerUnmerged.png in Resources */ = {isa = PBXBuildFile; fileRef = 20C3B70D125BCCC600ABEDE7 /* GBCommitCellMarkerUnmerged.png */; };
-		20915ED612874D2A005E0D82 /* GBCommitCellMarkerUnpushed.png in Resources */ = {isa = PBXBuildFile; fileRef = 20C3B70F125BCCC600ABEDE7 /* GBCommitCellMarkerUnpushed.png */; };
 		20915ED712874D2A005E0D82 /* GBCloneWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 20C3C30A125D9EA900ABEDE7 /* GBCloneWindowController.xib */; };
 		20915ED812874D2A005E0D82 /* GBRepositoryCloningViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2054FFE7125DE75800692C77 /* GBRepositoryCloningViewController.xib */; };
 		20915ED912874D2A005E0D82 /* GBUserNameEmailController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 20BF19561282258400A30EE6 /* GBUserNameEmailController.xib */; };
@@ -448,9 +445,6 @@
 		20BF19571282258400A30EE6 /* GBUserNameEmailController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 20BF19561282258400A30EE6 /* GBUserNameEmailController.xib */; };
 		20BF195B12822C5800A30EE6 /* GBBasePromptController.m in Sources */ = {isa = PBXBuildFile; fileRef = 20BF195A12822C5800A30EE6 /* GBBasePromptController.m */; };
 		20BF19721282329A00A30EE6 /* AddressBook.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20BF19711282329A00A30EE6 /* AddressBook.framework */; };
-		20C3B710125BCCC600ABEDE7 /* GBCommitCellMarkerHighlighted.png in Resources */ = {isa = PBXBuildFile; fileRef = 20C3B70B125BCCC600ABEDE7 /* GBCommitCellMarkerHighlighted.png */; };
-		20C3B712125BCCC600ABEDE7 /* GBCommitCellMarkerUnmerged.png in Resources */ = {isa = PBXBuildFile; fileRef = 20C3B70D125BCCC600ABEDE7 /* GBCommitCellMarkerUnmerged.png */; };
-		20C3B714125BCCC600ABEDE7 /* GBCommitCellMarkerUnpushed.png in Resources */ = {isa = PBXBuildFile; fileRef = 20C3B70F125BCCC600ABEDE7 /* GBCommitCellMarkerUnpushed.png */; };
 		20C3B71F125BCDC100ABEDE7 /* OAPrimaryMACAddress.m in Sources */ = {isa = PBXBuildFile; fileRef = 20C3B71E125BCDC100ABEDE7 /* OAPrimaryMACAddress.m */; };
 		20C3C234125C4DB600ABEDE7 /* GBWelcomeController.m in Sources */ = {isa = PBXBuildFile; fileRef = 20C3C233125C4DB600ABEDE7 /* GBWelcomeController.m */; };
 		20C3C30B125D9EA900ABEDE7 /* GBCloneWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 20C3C30A125D9EA900ABEDE7 /* GBCloneWindowController.xib */; };
@@ -944,9 +938,6 @@
 		20BF195912822C5800A30EE6 /* GBBasePromptController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GBBasePromptController.h; sourceTree = "<group>"; };
 		20BF195A12822C5800A30EE6 /* GBBasePromptController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GBBasePromptController.m; sourceTree = "<group>"; };
 		20BF19711282329A00A30EE6 /* AddressBook.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AddressBook.framework; path = System/Library/Frameworks/AddressBook.framework; sourceTree = SDKROOT; };
-		20C3B70B125BCCC600ABEDE7 /* GBCommitCellMarkerHighlighted.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = GBCommitCellMarkerHighlighted.png; path = ../Images/GBCommitCellMarkerHighlighted.png; sourceTree = "<group>"; };
-		20C3B70D125BCCC600ABEDE7 /* GBCommitCellMarkerUnmerged.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = GBCommitCellMarkerUnmerged.png; path = ../Images/GBCommitCellMarkerUnmerged.png; sourceTree = "<group>"; };
-		20C3B70F125BCCC600ABEDE7 /* GBCommitCellMarkerUnpushed.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = GBCommitCellMarkerUnpushed.png; path = ../Images/GBCommitCellMarkerUnpushed.png; sourceTree = "<group>"; };
 		20C3B71D125BCDC100ABEDE7 /* OAPrimaryMACAddress.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAPrimaryMACAddress.h; sourceTree = "<group>"; };
 		20C3B71E125BCDC100ABEDE7 /* OAPrimaryMACAddress.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAPrimaryMACAddress.m; sourceTree = "<group>"; };
 		20C3C232125C4DB600ABEDE7 /* GBWelcomeController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GBWelcomeController.h; sourceTree = "<group>"; };
@@ -1455,9 +1446,6 @@
 				20CE6D64138824D2001D9707 /* GBHistoryTableView.m */,
 				2057964011ADD3AA004715FE /* GBCommitCell.h */,
 				2057964111ADD3AA004715FE /* GBCommitCell.m */,
-				20C3B70B125BCCC600ABEDE7 /* GBCommitCellMarkerHighlighted.png */,
-				20C3B70D125BCCC600ABEDE7 /* GBCommitCellMarkerUnmerged.png */,
-				20C3B70F125BCCC600ABEDE7 /* GBCommitCellMarkerUnpushed.png */,
 				2003F9A8139526C900471731 /* GBBadgeTagCenter.png */,
 				2003F9A9139526C900471731 /* GBBadgeTagLeft.png */,
 				2003F9AA139526C900471731 /* GBBadgeTagRight.png */,
@@ -1927,9 +1915,6 @@
 				20915ECE12874D2A005E0D82 /* GBSidebarController.xib in Resources */,
 				20915ECF12874D2A005E0D82 /* GBMainWindowController.xib in Resources */,
 				20915ED112874D2A005E0D82 /* Credits.rtf in Resources */,
-				20915ED212874D2A005E0D82 /* GBCommitCellMarkerHighlighted.png in Resources */,
-				20915ED412874D2A005E0D82 /* GBCommitCellMarkerUnmerged.png in Resources */,
-				20915ED612874D2A005E0D82 /* GBCommitCellMarkerUnpushed.png in Resources */,
 				20915ED712874D2A005E0D82 /* GBCloneWindowController.xib in Resources */,
 				20915ED812874D2A005E0D82 /* GBRepositoryCloningViewController.xib in Resources */,
 				20915ED912874D2A005E0D82 /* GBUserNameEmailController.xib in Resources */,
@@ -2015,9 +2000,6 @@
 				20A37BB6120DC7640068AB8B /* GBSidebarController.xib in Resources */,
 				20A37BBE120DDBA60068AB8B /* GBMainWindowController.xib in Resources */,
 				203976651251A63700770D13 /* Credits.rtf in Resources */,
-				20C3B710125BCCC600ABEDE7 /* GBCommitCellMarkerHighlighted.png in Resources */,
-				20C3B712125BCCC600ABEDE7 /* GBCommitCellMarkerUnmerged.png in Resources */,
-				20C3B714125BCCC600ABEDE7 /* GBCommitCellMarkerUnpushed.png in Resources */,
 				20C3C30B125D9EA900ABEDE7 /* GBCloneWindowController.xib in Resources */,
 				2054FFE8125DE75800692C77 /* GBRepositoryCloningViewController.xib in Resources */,
 				20BF19571282258400A30EE6 /* GBUserNameEmailController.xib in Resources */,

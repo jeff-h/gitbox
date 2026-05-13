@@ -176,55 +176,29 @@
 - (void) drawSyncStatusIconInRect:(NSRect)rect
 {
   GBCommitSyncStatus st = self.commit.syncStatus;
-//  CGContextRef contextRef = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
-  
-  
-  NSImage* iconImage = nil;
-  
-  if (st != GBCommitSyncStatusNormal)
+  if (st == GBCommitSyncStatusNormal) return;
+
+  NSColor* fillColor;
+  if ([self isHighlighted] && self.isFocused)
   {
-    if (st == GBCommitSyncStatusUnmerged)
-    {
-      if ([self isHighlighted] && self.isFocused)
-      {
-        iconImage = [NSImage imageNamed:@"GBCommitCellMarkerHighlighted"];
-        //CGContextSetRGBFillColor(contextRef, 1.0, 1.0, 1.0, 0.6);
-      }
-      else
-      {
-        iconImage = [NSImage imageNamed:@"GBCommitCellMarkerUnmerged"];
-        //CGContextSetRGBFillColor(contextRef, 104.0/255.0, 162.0/255.0, 252.0/255.0, 1.0);
-        //CGContextSetRGBFillColor(contextRef, 100.0/255.0, 150.0/255.0, 252.0/255.0, 1.0);
-      }
-    }
-    else
-    {
-      if ([self isHighlighted] && self.isFocused)
-      {
-        iconImage = [NSImage imageNamed:@"GBCommitCellMarkerHighlighted"];
-        //CGContextSetRGBFillColor(contextRef, 1.0, 1.0, 1.0, 0.99);
-      }
-      else
-      {
-        iconImage = [NSImage imageNamed:@"GBCommitCellMarkerUnpushed"];
-        //CGContextSetRGBFillColor(contextRef, 255.0/255.0, 125.0/255.0, 0.0/255.0, 1.0);
-        //CGContextSetRGBFillColor(contextRef, 94.0/255.0, 220.0/255.0, 50.0/255.0, 1.0);
-      }
-    }
-    if (iconImage)
-    {
-      NSRect imageRect = rect;
-      imageRect.origin.x -= 14.0;
-      imageRect.origin.y += 4.0;
-      imageRect.size = [iconImage size];
-      [iconImage drawInRect:imageRect
-                   fromRect:(NSRect){.size = imageRect.size, .origin = NSZeroPoint}
-                  operation:NSCompositeSourceOver
-                   fraction:1.0 
-             respectFlipped:YES
-                      hints:nil];
-    }
+    fillColor = [NSColor whiteColor];
   }
+  else if (st == GBCommitSyncStatusUnmerged)
+  {
+    fillColor = [NSColor systemBlueColor];
+  }
+  else
+  {
+    fillColor = [NSColor systemGreenColor];
+  }
+
+  const CGFloat diameter = 9.0;
+  NSRect dotRect = NSMakeRect(rect.origin.x - 14.0,
+                              rect.origin.y + 4.0,
+                              diameter,
+                              diameter);
+  [fillColor setFill];
+  [[NSBezierPath bezierPathWithOvalInRect:dotRect] fill];
 }
 
 - (void) drawContentInFrame:(NSRect)cellFrame

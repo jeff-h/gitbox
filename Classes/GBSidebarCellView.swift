@@ -171,8 +171,12 @@ class GBSidebarCellView: NSTableCellView, NSTextFieldDelegate {
             .withSymbolConfiguration(symbolConfig)
         iconIsSFSymbol = true
         iconImageView.image = image
-        iconImageView.contentTintColor = .controlAccentColor
+        iconImageView.contentTintColor = Self.folderTintColor
     }
+
+    /// Lighter Finder-style blue used for folder/repository icons and badges in the sidebar.
+    /// Hand-picked to approximate Finder's folder tint — AppKit doesn't expose a public token for it.
+    static let folderTintColor = NSColor(red: 0.45, green: 0.72, blue: 0.93, alpha: 1.0)
 
     private func configureActionButton(for item: GBSidebarItem) {
         guard let obj = item.object,
@@ -281,7 +285,7 @@ class GBSidebarCellView: NSTableCellView, NSTextFieldDelegate {
 
             // Icon tint — white when selected for SF Symbols
             if iconIsSFSymbol {
-                iconImageView.contentTintColor = isEmphasised ? .alternateSelectedControlTextColor : .controlAccentColor
+                iconImageView.contentTintColor = isEmphasised ? .alternateSelectedControlTextColor : Self.folderTintColor
             }
 
             // Badge — default to true when window is nil (cell not yet in hierarchy)

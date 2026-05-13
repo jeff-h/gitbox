@@ -46,6 +46,7 @@ static const CGFloat kEditingHeaderHeight = kFieldTopInset + kEditingFieldHeight
 @property(nonatomic, assign) BOOL alreadyValidatedUserNameAndEmail;
 @property(nonatomic, strong) NSLayoutConstraint* headerHeightConstraint;
 @property(nonatomic, strong) NSLayoutConstraint* fieldBottomConstraint;
+@property(nonatomic, strong) NSTextField* emptyStateLabel;
 
 @property(weak, nonatomic, readonly) GBStage* stage;
 
@@ -217,6 +218,7 @@ static const CGFloat kEditingHeaderHeight = kFieldTopInset + kEditingFieldHeight
 	[self.messageTextView setFont:[NSFont systemFontOfSize:12.0]];
 
 	[self setupHeaderLayout];
+	[self setupEmptyStateLabel];
 
 	self.shortcutHintDetector = [GBStageShortcutHintDetector detectorWithView:self.shortcutHintLabel];
 	
@@ -803,6 +805,22 @@ static const CGFloat kEditingHeaderHeight = kFieldTopInset + kEditingFieldHeight
 	]];
 }
 
+- (void) setupEmptyStateLabel
+{
+	self.emptyStateLabel = [NSTextField labelWithString:NSLocalizedString(@"Working directory clean", @"Empty stage state")];
+	self.emptyStateLabel.translatesAutoresizingMaskIntoConstraints = NO;
+	self.emptyStateLabel.font = [NSFont systemFontOfSize:13.0];
+	self.emptyStateLabel.textColor = [NSColor secondaryLabelColor];
+	self.emptyStateLabel.alignment = NSTextAlignmentCenter;
+	self.emptyStateLabel.hidden = YES;
+	[self.view addSubview:self.emptyStateLabel];
+
+	[NSLayoutConstraint activateConstraints:@[
+		[self.emptyStateLabel.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor],
+		[self.emptyStateLabel.centerYAnchor constraintEqualToAnchor:self.view.centerYAnchor],
+	]];
+}
+
 - (void) updateHeaderSizeAnimating:(BOOL)animating
 {
 	// `animating` is ignored — height changes are instant. The flag is kept so callers
@@ -810,10 +828,22 @@ static const CGFloat kEditingHeaderHeight = kFieldTopInset + kEditingFieldHeight
 	// (textfield contents flickering, layout glitches when navigating away/back).
 	(void)animating;
 
+	BOOL clean = ([self.stage.changes count] == 0);
 	BOOL editing = (self.stage.currentCommitMessage != nil);
 
-	if (editing)
+	self.emptyStateLabel.hidden = !clean;
+	[self.tableView enclosingScrollView].hidden = clean;
+
+	if (clean)
 	{
+		// Nothing to commit — collapse the card and show the empty-state label centered.
+		self.headerView.hidden = YES;
+		self.headerHeightConstraint.constant = 0;
+		self.commitButton.hidden = YES;
+	}
+	else if (editing)
+	{
+		self.headerView.hidden = NO;
 		[self.messageTextView setTextColor:[NSColor labelColor]];
 		self.headerHeightConstraint.constant = kEditingHeaderHeight;
 		self.fieldBottomConstraint.constant = -kFieldBottomEditing;
@@ -821,6 +851,7 @@ static const CGFloat kEditingHeaderHeight = kFieldTopInset + kEditingFieldHeight
 	}
 	else
 	{
+		self.headerView.hidden = NO;
 		[self.messageTextView setString:NSLocalizedString(@"Commit...", @"Commit")];
 		[self.messageTextView setTextColor:[NSColor secondaryLabelColor]];
 		self.headerHeightConstraint.constant = kIdleHeaderHeight;

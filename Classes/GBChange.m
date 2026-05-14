@@ -471,11 +471,9 @@
 	if ([diffTool isEqualToString:@"Built-in"])
 	{
 		NSString* displayPath = [[self fileURL] relativePath] ?: [[self fileURL] path] ?: @"";
-		GBBuiltinDiffWindowController* wc =
-			[[GBBuiltinDiffWindowController alloc] initWithLeftURL:leftURL
-														  rightURL:rightURL
-													   displayPath:displayPath];
-		[wc runModalSheetOver:[NSApp keyWindow] ?: [NSApp mainWindow]];
+		[GBBuiltinDiffWindowController presentWithLeftURL:leftURL
+												  rightURL:rightURL
+											   displayPath:displayPath];
 		if (block) block();
 		return;
 	}

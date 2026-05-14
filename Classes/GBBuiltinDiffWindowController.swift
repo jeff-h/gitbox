@@ -1,8 +1,8 @@
 import AppKit
 import WebKit
 
-/// Built-in diff viewer — a sheet hosting a WKWebView that runs Monaco's
-/// diff editor against the two blob files prepared by GBChange.
+/// Built-in diff viewer — an app-modal window hosting a WKWebView that runs
+/// Monaco's diff editor against the two blob files prepared by GBChange.
 ///
 /// Enabled by selecting "Built-in" in Preferences → Integration. Everything
 /// is self-contained in this file plus a small branch in
@@ -14,25 +14,65 @@ import WebKit
 /// scripts/fetch-monaco.sh script, and the Resources/MonacoDiff directory.
 ///
 /// Monaco is bundled inside the .app at Resources/MonacoDiff/.
+///
+/// The controller is **cached** across opens: after the first close the
+/// instance is kept alive in a static var, so subsequent diffs reuse the
+/// already-warmed WKWebView + Monaco editor. First open: ~1 s. Subsequent:
+/// ~50 ms. Costs ~150 MB resident, but only after the user has opened a
+/// diff at least once, so users who never touch it pay nothing.
 @objc(GBBuiltinDiffWindowController)
 class GBBuiltinDiffWindowController: NSWindowController, NSWindowDelegate, WKNavigationDelegate, WKScriptMessageHandler {
 
-    // Keep a strong reference for the lifetime of the sheet — the caller
-    // (GBChange) does not retain us, and beginSheet does not either.
-    private static var openControllers = Set<GBBuiltinDiffWindowController>()
-
-    private let leftURL: URL
-    private let rightURL: URL
-    private let displayPath: String
-    private var webView: WKWebView!
-
+    private static var cached: GBBuiltinDiffWindowController?
+    private static var idleEvictTimer: Timer?
+    private static let idleEvictSeconds: TimeInterval = 120
     private static let sizeDefaultsKey = "GBBuiltinDiffSheetSize"
 
-    @objc init(leftURL: URL, rightURL: URL, displayPath: String) {
-        self.leftURL = leftURL
-        self.rightURL = rightURL
-        self.displayPath = displayPath
+    private var leftURL: URL = URL(fileURLWithPath: "/dev/null")
+    private var rightURL: URL = URL(fileURLWithPath: "/dev/null")
+    private var displayPath: String = ""
+    private var webView: WKWebView!
+    private var htmlLoaded = false
+    private var loadPending = false
 
+    /// Entry point called from ObjC. Reuses the cached instance if present;
+    /// otherwise creates one and caches it after the modal closes.
+    @objc(presentWithLeftURL:rightURL:displayPath:)
+    class func present(leftURL: URL, rightURL: URL, displayPath: String) {
+        idleEvictTimer?.invalidate()
+        idleEvictTimer = nil
+
+        let wc = cached ?? GBBuiltinDiffWindowController()
+        cached = wc
+        wc.update(leftURL: leftURL, rightURL: rightURL, displayPath: displayPath)
+        wc.runModalWindow()
+    }
+
+    /// Schedule eviction of the cached instance N seconds from now, so the
+    /// WKWebView + WebKit content process get reclaimed if the user doesn't
+    /// open another diff. Reset on every present().
+    private static func scheduleIdleEviction() {
+        idleEvictTimer?.invalidate()
+        idleEvictTimer = Timer.scheduledTimer(withTimeInterval: idleEvictSeconds, repeats: false) { _ in
+            cached?.tearDownForEviction()
+            cached = nil
+            idleEvictTimer = nil
+        }
+    }
+
+    /// Break the retain cycle through WKUserContentController (which strongly
+    /// retains its message handlers, i.e. self) so ARC can actually free
+    /// everything when `cached` drops its reference.
+    private func tearDownForEviction() {
+        window?.orderOut(nil)
+        let userContent = webView?.configuration.userContentController
+        userContent?.removeScriptMessageHandler(forName: "gbReadOnlyBeep")
+        userContent?.removeScriptMessageHandler(forName: "gbCloseSheet")
+        webView?.navigationDelegate = nil
+        window?.delegate = nil
+    }
+
+    private init() {
         let savedSize = Self.loadSavedSize() ?? NSSize(width: 1100, height: 720)
         let window = NSWindow(
             contentRect: NSRect(origin: .zero, size: savedSize),
@@ -40,7 +80,6 @@ class GBBuiltinDiffWindowController: NSWindowController, NSWindowDelegate, WKNav
             backing: .buffered,
             defer: false
         )
-        window.title = (displayPath as NSString).lastPathComponent
         window.isReleasedWhenClosed = false
 
         super.init(window: window)
@@ -58,16 +97,11 @@ class GBBuiltinDiffWindowController: NSWindowController, NSWindowDelegate, WKNav
         container.addSubview(web)
         self.webView = web
 
-        // "Done" button — sheets have no close button. Return triggers it.
-        let done = NSButton(title: "Done", target: self, action: #selector(closeSheet(_:)))
+        let done = NSButton(title: "Done", target: self, action: #selector(closeWindow(_:)))
         done.bezelStyle = .rounded
         done.keyEquivalent = "\r"
         done.translatesAutoresizingMaskIntoConstraints = false
         container.addSubview(done)
-
-        // Esc-to-close is handled by a capture-phase keydown listener in
-        // diff.html that posts gbCloseSheet — the WKWebView swallows the key
-        // before it can reach NSButton's keyEquivalent or -cancelOperation:.
 
         NSLayoutConstraint.activate([
             web.leadingAnchor.constraint(equalTo: container.leadingAnchor),
@@ -78,39 +112,45 @@ class GBBuiltinDiffWindowController: NSWindowController, NSWindowDelegate, WKNav
             done.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -20),
         ])
 
-        // Register *after* super.init so `self` is available.
         userContent.add(self, name: "gbReadOnlyBeep")
         userContent.add(self, name: "gbCloseSheet")
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) not supported") }
 
-    /// Present as a sheet on the given parent window (typically the main
-    /// repository window). Blocks the calling thread until dismissed so the
-    /// existing launchDiffWithBlock: contract — fire the completion block
-    /// after the diff window closes — still holds.
-    @objc(runModalSheetOver:)
-    func runModalSheet(over parentWindow: NSWindow?) {
-        guard let window = self.window else { return }
-        guard let monacoDir = Bundle.main.url(forResource: "MonacoDiff", withExtension: nil),
-              let htmlURL = Bundle.main.url(forResource: "diff", withExtension: "html",
-                                            subdirectory: "MonacoDiff") else {
-            NSLog("GBBuiltinDiffWindowController: MonacoDiff resources not found in bundle")
-            return
-        }
-        webView.loadFileURL(htmlURL, allowingReadAccessTo: monacoDir)
-        GBBuiltinDiffWindowController.openControllers.insert(self)
-        _ = parentWindow // reserved for future sheet mode; ignored in window mode
-        window.center()
-        NSApp.runModal(for: window)
-        GBBuiltinDiffWindowController.openControllers.remove(self)
+    private func update(leftURL: URL, rightURL: URL, displayPath: String) {
+        self.leftURL = leftURL
+        self.rightURL = rightURL
+        self.displayPath = displayPath
+        window?.title = (displayPath as NSString).lastPathComponent
     }
 
-    @objc private func closeSheet(_ sender: Any?) {
+    private func runModalWindow() {
+        guard let window = self.window else { return }
+        if !htmlLoaded {
+            guard let monacoDir = Bundle.main.url(forResource: "MonacoDiff", withExtension: nil),
+                  let htmlURL = Bundle.main.url(forResource: "diff", withExtension: "html",
+                                                subdirectory: "MonacoDiff") else {
+                NSLog("GBBuiltinDiffWindowController: MonacoDiff resources not found in bundle")
+                return
+            }
+            loadPending = true
+            webView.loadFileURL(htmlURL, allowingReadAccessTo: monacoDir)
+        } else {
+            // Reuse warm webview: just re-invoke __gbLoadDiff with new content.
+            pushDiffToWebView()
+        }
+        window.center()
+        NSApp.runModal(for: window)
+    }
+
+    @objc private func closeWindow(_ sender: Any?) {
         guard let window = self.window else { return }
         Self.saveSize(window.frame.size)
         NSApp.stopModal()
         window.orderOut(nil)
+        // Keep instance warm for fast subsequent opens; evict after idle timeout.
+        Self.scheduleIdleEviction()
     }
 
     private static func loadSavedSize() -> NSSize? {
@@ -124,19 +164,27 @@ class GBBuiltinDiffWindowController: NSWindowController, NSWindowDelegate, WKNav
     }
 
     override func cancelOperation(_ sender: Any?) {
-        closeSheet(sender)
+        closeWindow(sender)
     }
 
     // MARK: - NSWindowDelegate
 
     func windowShouldClose(_ sender: NSWindow) -> Bool {
-        closeSheet(nil)
+        closeWindow(nil)
         return false
     }
 
     // MARK: - WKNavigationDelegate
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        htmlLoaded = true
+        if loadPending {
+            loadPending = false
+            pushDiffToWebView()
+        }
+    }
+
+    private func pushDiffToWebView() {
         let left = (try? String(contentsOf: leftURL, encoding: .utf8)) ?? ""
         let right = (try? String(contentsOf: rightURL, encoding: .utf8)) ?? ""
         let language = Self.monacoLanguage(forPath: displayPath)
@@ -160,7 +208,7 @@ class GBBuiltinDiffWindowController: NSWindowController, NSWindowDelegate, WKNav
         if message.name == "gbReadOnlyBeep" {
             NSSound.beep()
         } else if message.name == "gbCloseSheet" {
-            closeSheet(nil)
+            closeWindow(nil)
         }
     }
 

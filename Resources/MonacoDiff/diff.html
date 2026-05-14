@@ -34,54 +34,68 @@
       try { window.webkit.messageHandlers.gbCloseSheet.postMessage({}); } catch (err) {}
     }
   }, true);
+  function wireBeep(codeEditor) {
+    var dom = codeEditor.getDomNode();
+    if (!dom) return;
+    dom.addEventListener('keydown', function(e) {
+      if (e.metaKey && (e.key === 'c' || e.key === 'a' || e.key === 'f')) return;
+      if (e.key && e.key.length === 1) postBeep();
+    }, true);
+  }
   window.__gbLoadDiff = function(p) {
     if (!window.__monacoReady) { pending = p; return; }
     if (p.theme === 'vs-dark') document.body.classList.add('dark');
+    else document.body.classList.remove('dark');
+
     var orig = monaco.editor.createModel(p.left  || '', p.language || 'plaintext');
     var modd = monaco.editor.createModel(p.right || '', p.language || 'plaintext');
-    var ed = monaco.editor.createDiffEditor(document.getElementById('container'), {
-      theme: p.theme || 'vs',
-      automaticLayout: true,
-      renderSideBySide: true,
-      readOnly: true,
-      originalEditable: false,
-      renderWhitespace: 'selection',
-      ignoreTrimWhitespace: false,
-      scrollBeyondLastLine: false,
-      readOnlyMessage: { value: '' },
-    });
-    ed.setModel({ original: orig, modified: modd });
 
-    // Wire a NSBeep on any keypress that would have triggered an edit.
-    function wireBeep(codeEditor) {
-      var dom = codeEditor.getDomNode();
-      if (!dom) return;
-      dom.addEventListener('keydown', function(e) {
-        // Ignore pure navigation / modifier-only keys.
-        if (e.metaKey && (e.key === 'c' || e.key === 'a' || e.key === 'f')) return;
-        if (e.key && e.key.length === 1) postBeep();
-      }, true);
+    if (!window.__diffEditor) {
+      // First time: build the diff editor and wire it up.
+      window.__diffEditor = monaco.editor.createDiffEditor(document.getElementById('container'), {
+        theme: p.theme || 'vs',
+        automaticLayout: true,
+        renderSideBySide: true,
+        readOnly: true,
+        originalEditable: false,
+        renderWhitespace: 'selection',
+        ignoreTrimWhitespace: false,
+        scrollBeyondLastLine: false,
+        readOnlyMessage: { value: '' },
+      });
+      wireBeep(window.__diffEditor.getOriginalEditor());
+      wireBeep(window.__diffEditor.getModifiedEditor());
+      window.__diffEditor.onDidUpdateDiff(function() {
+        if (window.__diffRevealed) return;
+        var changes = window.__diffEditor.getLineChanges();
+        if (!changes || !changes.length) return;
+        window.__diffRevealed = true;
+        var c = changes[0];
+        window.__diffEditor.getModifiedEditor().revealLineNearTop(c.modifiedStartLineNumber || 1);
+        window.__diffEditor.getOriginalEditor().revealLineNearTop(c.originalStartLineNumber || 1);
+      });
+    } else {
+      // Subsequent calls: dispose the previous models, switch theme if changed.
+      var prev = window.__diffEditor.getModel();
+      if (prev && prev.original) prev.original.dispose();
+      if (prev && prev.modified) prev.modified.dispose();
+      monaco.editor.setTheme(p.theme || 'vs');
     }
-    wireBeep(ed.getOriginalEditor());
-    wireBeep(ed.getModifiedEditor());
 
-    // Pre-scroll to the first diff change so users land on the change
-    // instead of the top of the file.
-    var revealed = false;
-    function revealFirst() {
-      if (revealed) return;
-      var changes = ed.getLineChanges();
+    // Reset the pre-scroll-to-first-diff flag so it fires for the new diff.
+    window.__diffRevealed = false;
+    window.__diffEditor.setModel({ original: orig, modified: modd });
+
+    // Fallback in case onDidUpdateDiff doesn't fire (e.g. identical content).
+    setTimeout(function() {
+      if (window.__diffRevealed) return;
+      var changes = window.__diffEditor.getLineChanges();
       if (!changes || !changes.length) return;
-      revealed = true;
+      window.__diffRevealed = true;
       var c = changes[0];
-      var modLine = c.modifiedStartLineNumber || 1;
-      var origLine = c.originalStartLineNumber || 1;
-      ed.getModifiedEditor().revealLineNearTop(modLine);
-      ed.getOriginalEditor().revealLineNearTop(origLine);
-    }
-    ed.onDidUpdateDiff(revealFirst);
-    // Fallback in case diff is computed synchronously before listener attaches.
-    setTimeout(revealFirst, 50);
+      window.__diffEditor.getModifiedEditor().revealLineNearTop(c.modifiedStartLineNumber || 1);
+      window.__diffEditor.getOriginalEditor().revealLineNearTop(c.originalStartLineNumber || 1);
+    }, 50);
   };
 </script>
 </body></html>

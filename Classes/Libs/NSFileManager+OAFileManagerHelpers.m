@@ -90,6 +90,9 @@
 			[t setArguments:[NSArray arrayWithObjects:@"-k", @"-d", @"0", aURL.path, nil]];
 			[t setStandardOutput:pipe];
 			[t setStandardError:[NSPipe pipe]];
+			// macOS 26 guards the app's inherited fd 0 — NSTask's internal dup()
+			// on a guarded fd triggers an EXC_GUARD crash. Redirect it to /dev/null.
+			[t setStandardInput:[NSFileHandle fileHandleWithNullDevice]];
 			[t launch];
 			[t waitUntilExit];
 			

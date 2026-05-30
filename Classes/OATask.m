@@ -145,7 +145,12 @@ NSString* OATaskDidDeallocateNotification  = @"OATaskDidDeallocateNotification";
 	NSPipe* pipe = [NSPipe pipe];
 	[task setStandardOutput:pipe];
 	NSFileHandle* fileHandle = [pipe fileHandleForReading];
-	
+
+	// macOS 26 guards the app's inherited fd 0/2 — NSTask's internal dup()
+	// on a guarded fd triggers an EXC_GUARD crash. Redirect them to /dev/null.
+	[task setStandardInput:[NSFileHandle fileHandleWithNullDevice]];
+	[task setStandardError:[NSFileHandle fileHandleWithNullDevice]];
+
 	[task launch];
 	NSData* data = nil;
 	@try

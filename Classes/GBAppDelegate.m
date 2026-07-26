@@ -305,21 +305,34 @@
 
 - (NSError *)application:(NSApplication *)application willPresentError:(NSError *)error
 {
-	if ([error.domain isEqualToString:NSCocoaErrorDomain] && error.code == NSUserCancelledError) 
+	if ([error.domain isEqualToString:NSCocoaErrorDomain] && error.code == NSUserCancelledError)
 		return error;
-	
+
 	NSAlert* alert = [NSAlert alertWithError:error];
-	
+
 	[[GBMainWindowController instance] sheetQueueAddBlock:^{
-		 // will be released in the callback
-		[alert beginSheetModalForWindow:[[GBMainWindowController instance] window] 
-						  modalDelegate:self
-						 didEndSelector:@selector(presentedErrorAlertDidEnd:returnCode:contextInfo:)
-							contextInfo:NULL];
+		NSWindow* w = [[GBMainWindowController instance] window];
+		if (w && w.isVisible)
+		{
+			 // will be released in the callback
+			[alert beginSheetModalForWindow:w
+							  modalDelegate:self
+							 didEndSelector:@selector(presentedErrorAlertDidEnd:returnCode:contextInfo:)
+								contextInfo:NULL];
+		}
+		else
+		{
+			// No window to hang a sheet on (e.g. minimised / no repo open). A
+			// sheet on a nil/hidden window never fires its didEnd, which would
+			// leak the queue slot and wedge it — so present app-modally and
+			// release the slot ourselves since runModal: is synchronous.
+			[alert runModal];
+			[[GBMainWindowController instance] sheetQueueEndBlock];
+		}
 	}];
 
 	NSLog(@"ERROR: %@", error);
-	
+
 	// Return "user cancelled" error because it's the only one which is not displayed.
 	return [NSError errorWithDomain:NSCocoaErrorDomain code:NSUserCancelledError userInfo:nil];
 }

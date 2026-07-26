@@ -395,14 +395,27 @@
 
 - (void) dismissSheet:(id)aWindowOrWindowController
 {
-	if (!aWindowOrWindowController) return;
+	// A dismiss must always balance the addBlock from the matching presentSheet:,
+	// otherwise the sheetQueue wedges and every later sheet (incl. error alerts)
+	// is silently swallowed. The window/controller can be nil here if the
+	// controller was deallocated before its callback fired (its callback holds
+	// only a __weak ref), so still release the queue slot in that case.
+	if (!aWindowOrWindowController)
+	{
+		[self.sheetQueue endBlock];
+		return;
+	}
 	NSWindow* aWindow = aWindowOrWindowController;
 	if (![aWindowOrWindowController isKindOfClass:[NSWindow class]])
 	{
 		aWindow = [aWindowOrWindowController window];
 	}
-	
-	if (!aWindow) return;
+
+	if (!aWindow)
+	{
+		[self.sheetQueue endBlock];
+		return;
+	}
 	[NSApp endSheet:aWindow];
 	[aWindow orderOut:nil];
 	[self.sheetQueue endBlock];
@@ -410,6 +423,9 @@
 
 - (void) dismissSheet
 {
+	// Nothing presented → nothing to balance. Guard so the no-arg path can't
+	// fire a spurious endBlock when there is no current sheet.
+	if (!self.currentSheet) return;
 	[self dismissSheet:self.currentSheet];
 	self.currentSheet = nil;
 }

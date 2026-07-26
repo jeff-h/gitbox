@@ -43,7 +43,7 @@
     aBlock();
     return;
   }
-  
+
   if (!self.queue) self.queue = [NSMutableArray array];
   [self.queue addObject:[aBlock copy]];
   [self proceed];
@@ -68,7 +68,9 @@
 
 - (void) endBlock
 {
-  self.operationCount--;
+  // Clamp at zero: an extra (unbalanced) endBlock must never drive the count
+  // negative, which would let a queued block run on top of a still-visible one.
+  if (self.operationCount > 0) self.operationCount--;
   [self proceed];
 }
 

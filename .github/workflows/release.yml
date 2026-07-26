@@ -208,7 +208,11 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          # --target pins the tag to the commit we actually built. Without it,
+          # gh tags the default branch's head instead, so the version tags end
+          # up pointing at whatever master happened to be — not this build.
           gh release create "v${{ inputs.version }}" \
+            --target "$GITHUB_SHA" \
             --title "Gitbox ${{ inputs.version }}" \
             --generate-notes \
             "$RUNNER_TEMP/export/Gitbox-${{ inputs.version }}.zip" \

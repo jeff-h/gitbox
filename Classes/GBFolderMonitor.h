@@ -6,6 +6,10 @@
 
 @property(nonatomic, strong) OAFSEventStream* eventStream;
 @property(nonatomic, copy) NSString* path;
+// The repository's resolved common git dir. Set this alongside path: git state is classified
+// against it, and it is watched as a separate root when it lies outside the working tree
+// (linked worktrees, submodules).
+@property(nonatomic, copy) NSString* gitDirPath;
 
 // Action signature: 
 // - (void) folderMonitorDidUpdate:(GBFolderMonitor*)monitor;

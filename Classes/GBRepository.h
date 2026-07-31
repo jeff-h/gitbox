@@ -1,6 +1,5 @@
 #import "GBErrors.h"
 
-@class GitRepository;
 @class GBRepository;
 @class GBSubmodule;
 @class GBRemote;
@@ -20,12 +19,17 @@
 @property(nonatomic, strong) NSURL* url;
 @property(nonatomic, strong, readonly) NSData* URLBookmarkData;
 @property(nonatomic, strong, readonly) NSString* path;
-@property(nonatomic, strong) NSURL* dotGitURL;
+// Resolved git directory holding per-worktree state (HEAD, index, MERGE_HEAD, rebase-apply…).
+// For a normal repository this is <url>/.git; for a linked worktree or submodule it is the
+// directory that the .git pointer file references.
+@property(nonatomic, strong, readonly) NSURL* gitDirURL;
+// Resolved git directory holding state shared between worktrees (config, refs, objects…).
+// Same as gitDirURL except for linked worktrees, where it is the main repository's git dir.
+@property(nonatomic, strong, readonly) NSURL* commonGitDirURL;
 @property(nonatomic, strong) NSArray* localBranches;
 @property(nonatomic, strong) NSArray* remotes;
 @property(nonatomic, strong) NSArray* tags;
 @property(nonatomic, strong) NSArray* submodules;
-@property(nonatomic, strong) GitRepository* libgitRepository;
 @property(nonatomic, strong, readonly) GBGitConfig* config;
 
 @property(nonatomic, strong) GBStage* stage;
@@ -61,6 +65,16 @@
 + (BOOL) validateRepositoryURL:(NSURL*)aURL;
 + (void) initRepositoryAtURL:(NSURL*)url;
 + (NSURL*) URLFromBookmarkData:(NSData*)bookmarkData;
+
+
+#pragma mark Worktrees
+
+// YES when this repository is a linked worktree sharing a main repository's git dir.
+- (BOOL) isLinkedWorktree;
+// Branch names checked out in other working copies of the same repository (the main
+// checkout and sibling linked worktrees), mapped to that working copy's path.
+// Git refuses to check these branches out here. Cheap filesystem sniff — recomputed per call.
+- (NSDictionary*) branchNamesCheckedOutInOtherWorktrees;
 
 
 #pragma mark Interrogation
@@ -144,6 +158,7 @@
 
 - (id) launchTaskAndWait:(GBTask*)aTask;
 - (NSURL*) gitURLWithSuffix:(NSString*)suffix;
+- (NSURL*) commonGitURLWithSuffix:(NSString*)suffix;
 - (NSError*) errorWithCode:(GBErrorCode)aCode
                description:(NSString*)aDescription
                     reason:(NSString*)aReason

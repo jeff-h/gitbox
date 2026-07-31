@@ -242,6 +242,9 @@
 		self.selectedCommit = self.repository.stage;
 		self.folderMonitor = [[GBFolderMonitor alloc] init];
 		self.folderMonitor.path = [[aURL path] stringByStandardizingPath];
+		// Common git dir: covers shared refs and, for linked worktrees, the per-worktree
+		// state under <commondir>/worktrees/<name>/ as well.
+		self.folderMonitor.gitDirPath = [self.repository.commonGitDirURL.path stringByStandardizingPath];
 		self.undoManager = [[NSUndoManager alloc] init];
 		
 		remoteStateUpdateInterval = 10.0;
@@ -640,6 +643,13 @@
 	return self.userDefinedName.length > 0 ? self.userDefinedName : self.url.path.lastPathComponent;
 }
 
+- (NSString*) sidebarItemSubtitle
+{
+	// A worktree is a repository pinned to one branch — show which one.
+	if (![self.repository isLinkedWorktree]) return nil;
+	return self.repository.currentLocalRef.name;
+}
+
 - (void) sidebarItemSetStringValue:(NSString*)value
 {
 	self.userDefinedName = value;
@@ -817,6 +827,7 @@
 	if (self.viewController.repositoryController == self) self.viewController.repositoryController = nil;
 	self.folderMonitor.target = nil;
 	self.folderMonitor.action = NULL;
+	self.folderMonitor.gitDirPath = nil;
 	self.folderMonitor.path = nil;
 	[self.repository.blockTransaction clean];
 	self.repository = nil;
@@ -1683,6 +1694,18 @@
 
 - (void) checkoutRef:(GBRef*)ref
 {
+	// git refuses to check out a branch held by another worktree; explain instead of
+	// surfacing its raw "fatal: '<branch>' is already used by worktree" error.
+	if ([ref isLocalBranch])
+	{
+		NSString* otherWorktreePath = [[self.repository branchNamesCheckedOutInOtherWorktrees] objectForKey:ref.name];
+		if (otherWorktreePath)
+		{
+			[NSAlert message:[NSString stringWithFormat:NSLocalizedString(@"Branch “%@” is checked out in another worktree.", @"App"), ref.name]
+				 description:[NSString stringWithFormat:NSLocalizedString(@"Git allows a branch to be checked out in only one worktree at a time. It is currently in use at %@.", @"App"), otherWorktreePath]];
+			return;
+		}
+	}
 	[self checkoutHelper:^(void(^block)()){
 		[self.repository checkoutRef:ref withBlock:block];
 	}];

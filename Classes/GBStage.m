@@ -188,7 +188,9 @@
 
 - (void) updateConflictState
 {
-	self.rebaseConflict = ([[NSFileManager defaultManager] fileExistsAtPath:[self.repository.dotGitURL.path stringByAppendingPathComponent:@"rebase-apply"]]);
+	// Both rebase flavours: rebase-apply (am-based) and rebase-merge (interactive/merge-based).
+	self.rebaseConflict = ([[NSFileManager defaultManager] fileExistsAtPath:[self.repository gitURLWithSuffix:@"rebase-apply"].path]
+						|| [[NSFileManager defaultManager] fileExistsAtPath:[self.repository gitURLWithSuffix:@"rebase-merge"].path]);
 }
 
 - (void) updateStageWithBlock:(void(^)(BOOL contentDidChange))block

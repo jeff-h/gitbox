@@ -76,7 +76,7 @@
 	[super viewDidLoad];
 
 	NSError* error = nil;
-	self.contents = [NSString stringWithContentsOfFile:[self.repository.path stringByAppendingPathComponent:@".git/config"] encoding:NSUTF8StringEncoding error:&error];
+	self.contents = [NSString stringWithContentsOfFile:[self.repository commonGitURLWithSuffix:@"config"].path encoding:NSUTF8StringEncoding error:&error];
 
 	if (!self.contents)
 	{
@@ -106,7 +106,7 @@
 	// Don't overwrite if unchanged — could clobber updates from the Remote Repositories tab.
 	if (config && self.contents && [self.contents isEqual:config]) return;
 
-	if (![config writeToFile:[self.repository.path stringByAppendingPathComponent:@".git/config"]
+	if (![config writeToFile:[self.repository commonGitURLWithSuffix:@"config"].path
 				  atomically:YES
 					encoding:NSUTF8StringEncoding
 					   error:&error])

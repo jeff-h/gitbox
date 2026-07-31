@@ -646,20 +646,8 @@
 		return;    
 	}
 	
-	for (GBRef* localBranch in repo.localBranches)
-	{
-		NSMenuItem* item = [NSMenuItem new];
-		[item setTitle:localBranch.name];
-		[item setAction:@selector(checkoutBranch:)];
-		[item setTarget:nil];
-		[item setRepresentedObject:localBranch];
-		if ([localBranch.name isEqual:repo.currentLocalRef.name])
-		{
-			[item setState:NSOnState];
-		}
-		[currentBranchesMenu addItem:item];
-	}
-	
+	[self addLocalBranchCheckoutItemsToMenu:currentBranchesMenu];
+
 	[currentBranchesMenu addItem:[NSMenuItem separatorItem]];
 	
 	
@@ -1170,29 +1158,44 @@
 	// noop method to trigger validation callbacks
 }
 
-// Used by main menu
-- (BOOL) validateCheckoutBranchMenu:(NSMenuItem*)sender
+// Adds one checkout item per local branch, disabling branches that git would refuse to
+// check out because another worktree holds them. Returns YES if any item was added.
+- (BOOL) addLocalBranchCheckoutItemsToMenu:(NSMenu*)aMenu
 {
-	[sender setSubmenu:[NSMenu menuWithTitle:[sender title]]];
-	
-	NSMenu* aMenu = [sender submenu];
 	GBRepository* repo = self.repositoryController.repository;
+	NSDictionary* branchesCheckedOutElsewhere = [repo branchNamesCheckedOutInOtherWorktrees];
 	BOOL hasOneItem = NO;
 	for (GBRef* localBranch in repo.localBranches)
 	{
 		NSMenuItem* item = [NSMenuItem new];
 		[item setTitle:localBranch.name];
 		[item setAction:@selector(checkoutBranch:)];
+		[item setTarget:nil];
 		[item setRepresentedObject:localBranch];
-		if ([localBranch.name isEqual:repo.currentLocalRef.name])
+		BOOL isCurrent = [localBranch.name isEqual:repo.currentLocalRef.name];
+		if (isCurrent)
 		{
 			[item setState:NSOnState];
+		}
+		NSString* otherWorktreePath = [branchesCheckedOutElsewhere objectForKey:localBranch.name];
+		if (otherWorktreePath && !isCurrent)
+		{
+			[item setAction:NULL]; // no action: automatic menu validation disables the item
+			[item setTitle:[NSString stringWithFormat:NSLocalizedString(@"%@ — in %@", @"Toolbar"), localBranch.name, [otherWorktreePath lastPathComponent]]];
 		}
 		[aMenu addItem:item];
 		hasOneItem = YES;
 	}
-	
 	return hasOneItem;
+}
+
+// Used by main menu
+- (BOOL) validateCheckoutBranchMenu:(NSMenuItem*)sender
+{
+	[sender setSubmenu:[NSMenu menuWithTitle:[sender title]]];
+
+	NSMenu* aMenu = [sender submenu];
+	return [self addLocalBranchCheckoutItemsToMenu:aMenu];
 }
 
 // Used by main menu

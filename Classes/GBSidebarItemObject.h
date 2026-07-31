@@ -13,6 +13,8 @@
 
 - (NSImage*)   sidebarItemImage;
 - (NSString*)  sidebarItemTitle;
+// Secondary text shown after the title in a muted colour (e.g. a worktree's branch).
+- (NSString*)  sidebarItemSubtitle;
 - (NSString*)  sidebarItemTooltip;
 - (NSUInteger) sidebarItemBadgeInteger;
 - (BOOL) sidebarItemIsSelectable;

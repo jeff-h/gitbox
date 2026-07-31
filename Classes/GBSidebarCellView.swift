@@ -10,6 +10,7 @@ class GBSidebarCellView: NSTableCellView, NSTextFieldDelegate {
 
     private let iconImageView = NSImageView()
     private let titleLabel = NSTextField(labelWithString: "")
+    private let subtitleLabel = NSTextField(labelWithString: "")
     let badgeView = GBBadgeView()
     private let spinnerView = NSProgressIndicator()
     private let actionButton = NSButton()
@@ -29,6 +30,7 @@ class GBSidebarCellView: NSTableCellView, NSTextFieldDelegate {
     private static let iconMarginLeft: CGFloat = 2
     private static let iconMarginRight: CGFloat = 5
     private static let fontSize: CGFloat = 13
+    private static let subtitleFontSize: CGFloat = 11
     private static let spinnerSize: CGFloat = 16
     private static let rightPadding: CGFloat = 4
     private static let elementGap: CGFloat = 6
@@ -69,6 +71,17 @@ class GBSidebarCellView: NSTableCellView, NSTextFieldDelegate {
         titleLabel.drawsBackground = false
         addSubview(titleLabel)
 
+        // Subtitle (e.g. a worktree's branch) — muted, non-editable, after the title
+        subtitleLabel.font = NSFont.systemFont(ofSize: Self.subtitleFontSize)
+        subtitleLabel.textColor = .secondaryLabelColor
+        subtitleLabel.lineBreakMode = .byTruncatingTail
+        subtitleLabel.cell?.usesSingleLineMode = true
+        subtitleLabel.isEditable = false
+        subtitleLabel.isBordered = false
+        subtitleLabel.drawsBackground = false
+        subtitleLabel.isHidden = true
+        addSubview(subtitleLabel)
+
         // Badge
         badgeView.isHidden = true
         addSubview(badgeView)
@@ -106,6 +119,10 @@ class GBSidebarCellView: NSTableCellView, NSTextFieldDelegate {
 
         // Title
         titleLabel.stringValue = item.title ?? ""
+
+        // Subtitle
+        subtitleLabel.stringValue = item.subtitle ?? ""
+        subtitleLabel.isHidden = subtitleLabel.stringValue.isEmpty
 
         // Tooltip
         toolTip = item.tooltip
@@ -162,6 +179,10 @@ class GBSidebarCellView: NSTableCellView, NSTextFieldDelegate {
         } else if item.object is GBRepositoriesGroup {
             symbolName = "folder"
             accessibilityDesc = "Group"
+        } else if let repoCtrl = item.object as? GBRepositoryController,
+                  repoCtrl.repository?.isLinkedWorktree() == true {
+            symbolName = "arrow.triangle.branch"
+            accessibilityDesc = "Worktree"
         } else {
             symbolName = "folder.fill"
             accessibilityDesc = "Repository"
@@ -260,7 +281,23 @@ class GBSidebarCellView: NSTableCellView, NSTextFieldDelegate {
         let textWidth = max(rightEdge - textX, 0)
         let textHeight = titleLabel.intrinsicContentSize.height
         let textY = round((bounds.height - textHeight) / 2)
-        titleLabel.frame = NSRect(x: textX, y: textY, width: textWidth, height: textHeight)
+
+        if subtitleLabel.isHidden {
+            titleLabel.frame = NSRect(x: textX, y: textY, width: textWidth, height: textHeight)
+        } else {
+            // Title keeps its natural width; subtitle fills the rest.
+            // (intrinsicContentSize is unusable here: a truncating text field reports no intrinsic
+            // width, and raw string measurement misses the cell's padding — cellSize includes it.)
+            let titleNaturalWidth = ceil(titleLabel.cell?.cellSize.width ?? 0)
+            let titleWidth = min(titleNaturalWidth, textWidth)
+            titleLabel.frame = NSRect(x: textX, y: textY, width: titleWidth, height: textHeight)
+
+            let subtitleX = titleLabel.frame.maxX + Self.elementGap
+            let subtitleWidth = max(rightEdge - subtitleX, 0)
+            let subtitleHeight = subtitleLabel.intrinsicContentSize.height
+            let subtitleY = round((bounds.height - subtitleHeight) / 2)
+            subtitleLabel.frame = NSRect(x: subtitleX, y: subtitleY, width: subtitleWidth, height: subtitleHeight)
+        }
     }
 
     deinit {
@@ -282,6 +319,11 @@ class GBSidebarCellView: NSTableCellView, NSTextFieldDelegate {
 
             // Title
             titleLabel.textColor = isEmphasised ? .alternateSelectedControlTextColor : .controlTextColor
+
+            // Subtitle — muted variant of the title colour
+            subtitleLabel.textColor = isEmphasised
+                ? NSColor.alternateSelectedControlTextColor.withAlphaComponent(0.75)
+                : .secondaryLabelColor
 
             // Icon tint — white when selected for SF Symbols
             if iconIsSFSymbol {

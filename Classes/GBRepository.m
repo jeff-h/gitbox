@@ -14,14 +14,9 @@
 #import "GBVersionComparator.h"
 #import "GBLocalRemoteAssociationTask.h"
 
-#import "GitRepository.h"
-#import "GitConfig.h"
-
 #import "GBGitConfig.h"
 #import "GBAuthenticatedTask.h"
 #import "GBMainWindowController.h"
-
-#import "GitRepository.h"
 
 #import "OAPropertyListController.h"
 #import "OABlockGroup.h"
@@ -62,12 +57,12 @@
 @synthesize dispatchQueue;
 @synthesize URLBookmarkData;
 @dynamic path;
-@synthesize dotGitURL;
+@synthesize gitDirURL;
+@synthesize commonGitDirURL;
 @synthesize localBranches;
 @synthesize remotes;
 @synthesize tags;
 @synthesize submodules=_submodules;
-@synthesize libgitRepository;
 
 @synthesize stage;
 @synthesize currentLocalRef;
@@ -194,21 +189,82 @@
 }
 
 
+// Linked worktrees and submodules have .git as a pointer file: "gitdir: <path>".
+// Returns the target path (absolute, standardized) or nil if .git is not a pointer file.
+// Deliberately a cheap filesystem sniff rather than a `git rev-parse` fork: this runs
+// once per repository during sidebar restore at launch.
++ (NSString*) gitDirPointerTargetForPath:(NSString*)aPath
+{
+	static NSString* const pointerPrefix = @"gitdir: ";
+
+	NSString* dotGitPath = [aPath stringByAppendingPathComponent:@".git"];
+	BOOL isDirectory = NO;
+	if (![[NSFileManager defaultManager] fileExistsAtPath:dotGitPath isDirectory:&isDirectory]) return nil;
+	if (isDirectory) return nil;
+
+	NSString* contents = [NSString stringWithContentsOfFile:dotGitPath encoding:NSUTF8StringEncoding error:NULL];
+	if (![contents hasPrefix:pointerPrefix]) return nil;
+
+	NSString* target = [[contents substringFromIndex:[pointerPrefix length]] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+	if ([target length] == 0) return nil;
+	if (![target isAbsolutePath])
+	{
+		target = [aPath stringByAppendingPathComponent:target];
+	}
+	return [target stringByStandardizingPath];
+}
+
+// Resolves <aPath>/.git to the actual git directory (following a worktree/submodule
+// pointer file if needed). Returns nil if there is no resolvable git directory.
++ (NSURL*) resolvedGitDirURLForPath:(NSString*)aPath
+{
+	if (!aPath) return nil;
+
+	NSString* dotGitPath = [aPath stringByAppendingPathComponent:@".git"];
+	BOOL isDirectory = NO;
+	if ([[NSFileManager defaultManager] fileExistsAtPath:dotGitPath isDirectory:&isDirectory] && isDirectory)
+	{
+		return [NSURL fileURLWithPath:dotGitPath isDirectory:YES];
+	}
+
+	NSString* target = [self gitDirPointerTargetForPath:aPath];
+	if (!target) return nil;
+	if (!([[NSFileManager defaultManager] fileExistsAtPath:target isDirectory:&isDirectory] && isDirectory)) return nil;
+	return [NSURL fileURLWithPath:target isDirectory:YES];
+}
+
+// The git directory shared between worktrees. A linked worktree's git dir contains a
+// "commondir" file pointing at the main repository's git dir; in every other case
+// (normal repo, submodule) git defines the common dir as the git dir itself.
++ (NSURL*) resolvedCommonGitDirURLForGitDirURL:(NSURL*)aGitDirURL
+{
+	if (!aGitDirURL) return nil;
+
+	NSString* commondirPath = [aGitDirURL.path stringByAppendingPathComponent:@"commondir"];
+	NSString* contents = [NSString stringWithContentsOfFile:commondirPath encoding:NSUTF8StringEncoding error:NULL];
+	if (!contents) return aGitDirURL;
+
+	NSString* target = [contents stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+	if ([target length] == 0) return aGitDirURL;
+	if (![target isAbsolutePath])
+	{
+		target = [aGitDirURL.path stringByAppendingPathComponent:target];
+	}
+	return [NSURL fileURLWithPath:[target stringByStandardizingPath] isDirectory:YES];
+}
+
 + (BOOL) isValidRepositoryPath:(NSString*)aPath
 {
 	if (!aPath) return NO;
 	if ([aPath rangeOfString:@"/.Trash/"].location != NSNotFound) return NO;
-	
-	BOOL isDirectory = NO;
-	if ([[NSFileManager defaultManager] fileExistsAtPath:[aPath stringByAppendingPathComponent:@".git"] isDirectory:&isDirectory])
+
+	if ([self resolvedGitDirURLForPath:aPath])
 	{
-		if (isDirectory)
-		{
-			return YES;
-		}
+		return YES;
 	}
-	
+
 	// Bare repository:
+	BOOL isDirectory = NO;
 	if ([[NSFileManager defaultManager] fileExistsAtPath:[aPath stringByAppendingPathComponent:@"HEAD"] isDirectory:&isDirectory])
 	{
 		if (isDirectory) return NO;
@@ -284,7 +340,17 @@
 		[NSAlert message:NSLocalizedString(@"File is not a folder.", @"") description:aPath];
 		return NO;
 	}
-	
+
+	// A worktree/submodule pointer whose target no longer exists: offering "git init" here
+	// would be wrong, so explain the actual problem instead.
+	NSString* gitDirPointerTarget = [self gitDirPointerTargetForPath:aPath];
+	if (gitDirPointerTarget)
+	{
+		[NSAlert message:NSLocalizedString(@"The folder is a git worktree, but its git directory is missing.", @"App")
+			 description:[NSString stringWithFormat:NSLocalizedString(@"%@ points to %@, which does not exist. The parent repository may have been moved or deleted.", @"App"), [aPath stringByAppendingPathComponent:@".git"], gitDirPointerTarget]];
+		return NO;
+	}
+
 	if (![NSFileManager isWritableDirectoryAtPath:aPath])
 	{
 		[NSAlert message:NSLocalizedString(@"No write access to the folder.", @"") description:aPath];
@@ -349,13 +415,14 @@
 - (void) setUrl:(NSURL *)aURL
 {
 	if (aURL == url) return;
-	
+
 	url = aURL;
-	
+	gitDirURL = nil;
+	commonGitDirURL = nil;
+
 	if (!url)
 	{
 		self.URLBookmarkData = nil;
-		self.libgitRepository = nil;
 	}
 	else
 	{
@@ -369,19 +436,89 @@
 			NSLog(@"[GBRepository setUrl:]: Cannot create bookmark data for URL %@", url);
 			self.URLBookmarkData = nil;
 		}
-		
-		self.libgitRepository = [[GitRepository alloc] init];
-		self.libgitRepository.URL = url;
 	}
 }
 
-- (NSURL*) dotGitURL
+- (NSURL*) gitDirURL
 {
-	if (!dotGitURL)
+	if (!gitDirURL)
 	{
-		self.dotGitURL = [self.url URLByAppendingPathComponent:@".git"];
+		gitDirURL = [[self class] resolvedGitDirURLForPath:self.path];
+		if (!gitDirURL)
+		{
+			// Resolution only fails if the repo vanished after validation (e.g. a worktree
+			// whose parent repo was deleted while open). Point at <url>/.git — the historic
+			// behaviour — so downstream reads fail visibly instead of crashing on nil paths.
+			NSLog(@"GBRepository: cannot resolve git dir for %@", self.path);
+			gitDirURL = [self.url URLByAppendingPathComponent:@".git"];
+		}
 	}
-	return dotGitURL;
+	return gitDirURL;
+}
+
+- (NSURL*) commonGitDirURL
+{
+	if (!commonGitDirURL)
+	{
+		commonGitDirURL = [[self class] resolvedCommonGitDirURLForGitDirURL:self.gitDirURL];
+	}
+	return commonGitDirURL;
+}
+
+
+#pragma mark Worktrees
+
+
+// Extracts a branch name from HEAD file contents ("ref: refs/heads/<name>").
+// Returns nil for a detached HEAD or unreadable contents.
++ (NSString*) branchNameFromHEADContents:(NSString*)contents
+{
+	static NSString* const symbolicRefPrefix = @"ref: refs/heads/";
+	contents = [contents stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+	if (![contents hasPrefix:symbolicRefPrefix]) return nil;
+	return [contents substringFromIndex:[symbolicRefPrefix length]];
+}
+
+- (BOOL) isLinkedWorktree
+{
+	return ![self.gitDirURL isEqual:self.commonGitDirURL];
+}
+
+- (NSDictionary*) branchNamesCheckedOutInOtherWorktrees
+{
+	NSMutableDictionary* branchNames = [NSMutableDictionary dictionary];
+	NSFileManager* fm = [NSFileManager defaultManager];
+	NSString* commonDirPath = self.commonGitDirURL.path;
+	NSString* ownGitDirPath = self.gitDirURL.path;
+
+	// The main checkout is relevant only when we are a linked worktree; a bare main
+	// repository (git dir not named .git) has no checkout to collide with.
+	if ([self isLinkedWorktree] && [[commonDirPath lastPathComponent] isEqualToString:@".git"])
+	{
+		NSString* headContents = [NSString stringWithContentsOfFile:[commonDirPath stringByAppendingPathComponent:@"HEAD"] encoding:NSUTF8StringEncoding error:NULL];
+		NSString* branchName = [[self class] branchNameFromHEADContents:headContents];
+		if (branchName) [branchNames setObject:[commonDirPath stringByDeletingLastPathComponent] forKey:branchName];
+	}
+
+	// Sibling linked worktrees: each has an admin dir <commondir>/worktrees/<name> holding
+	// its HEAD and a "gitdir" file pointing back at <working copy>/.git.
+	NSString* worktreesDirPath = [commonDirPath stringByAppendingPathComponent:@"worktrees"];
+	for (NSString* adminDirName in [fm contentsOfDirectoryAtPath:worktreesDirPath error:NULL])
+	{
+		NSString* adminDirPath = [worktreesDirPath stringByAppendingPathComponent:adminDirName];
+		if ([adminDirPath isEqualToString:ownGitDirPath]) continue;
+
+		NSString* headContents = [NSString stringWithContentsOfFile:[adminDirPath stringByAppendingPathComponent:@"HEAD"] encoding:NSUTF8StringEncoding error:NULL];
+		NSString* branchName = [[self class] branchNameFromHEADContents:headContents];
+		if (!branchName) continue;
+
+		NSString* backPointer = [[NSString stringWithContentsOfFile:[adminDirPath stringByAppendingPathComponent:@"gitdir"] encoding:NSUTF8StringEncoding error:NULL] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+		if (![[backPointer lastPathComponent] isEqualToString:@".git"]) continue; // broken or prunable worktree
+
+		[branchNames setObject:[backPointer stringByDeletingLastPathComponent] forKey:branchName];
+	}
+
+	return branchNames;
 }
 
 - (GBStage*) stage
@@ -767,11 +904,11 @@
 		NSLog(@"%@ %@ error: %@", [self class], NSStringFromSelector(_cmd), outError);
 	}
 	HEAD = [HEAD stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-	NSString* refprefix = @"ref: refs/heads/";
 	GBRef* ref = [GBRef new];
-	if ([HEAD hasPrefix:refprefix])
+	NSString* branchName = [[self class] branchNameFromHEADContents:HEAD];
+	if (branchName)
 	{
-		ref.name = [HEAD substringFromIndex:[refprefix length]];
+		ref.name = branchName;
 	}
 	else // assuming SHA1 ref
 	{
@@ -1012,7 +1149,7 @@
 	
 	if (!ref)
 	{
-		[self.libgitRepository.config removeKey:[NSString stringWithFormat:@"branch.%@.merge", escapedName]];
+		[self.config removeKey:[NSString stringWithFormat:@"branch.%@.merge", escapedName]];
 		if (block) block();
 		return;
 	}
@@ -2003,7 +2140,12 @@
 
 - (NSURL*) gitURLWithSuffix:(NSString*)suffix
 {
-	return [self.dotGitURL URLByAppendingPathComponent:suffix];
+	return [self.gitDirURL URLByAppendingPathComponent:suffix];
+}
+
+- (NSURL*) commonGitURLWithSuffix:(NSString*)suffix
+{
+	return [self.commonGitDirURL URLByAppendingPathComponent:suffix];
 }
 
 - (NSError*) errorWithCode:(GBErrorCode)aCode

@@ -32,4 +32,5 @@
 // Import protocols and interfaces
 #import "GBSidebarItemObject.h"
 #import "GBRepositoriesGroup.h"
+#import "GBRepositoryController.h"
 #import "GBSubmoduleController.h"

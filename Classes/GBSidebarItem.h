@@ -16,6 +16,8 @@
 @property(nonatomic, copy, readonly) NSString* UID;
 @property(nonatomic, strong) NSImage* image;
 @property(nonatomic, copy) NSString* title;
+// Secondary text shown after the title in a muted colour (e.g. a worktree's branch).
+@property(nonatomic, copy) NSString* subtitle;
 @property(nonatomic, copy) NSString* tooltip;
 @property(nonatomic, assign) NSUInteger badgeInteger;
 - (NSUInteger) subtreeBadgeInteger;

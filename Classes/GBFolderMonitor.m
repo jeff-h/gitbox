@@ -15,6 +15,7 @@
 
 @synthesize eventStream;
 @synthesize path;
+@synthesize gitDirPath;
 @synthesize target;
 @synthesize action;
 @synthesize folderResumeDate;
@@ -30,36 +31,77 @@
 	// using setters to correctly remove the path and the observer from eventStream
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	if (path) [eventStream removePath:path];
+	NSString* externalGitDirPath = [self externalGitDirPath];
+	if (externalGitDirPath) [eventStream removePath:externalGitDirPath];
 	 eventStream = nil;
 }
 
 - (void) setEventStream:(OAFSEventStream *)newEventStream
 {
 	if (newEventStream == eventStream) return;
-	
+
+	NSString* externalGitDirPath = [self externalGitDirPath];
+
 	if (path) [eventStream removePath:path];
-	if (eventStream) [[NSNotificationCenter defaultCenter] removeObserver:self 
-																	 name:OAFSEventStreamNotification 
+	if (externalGitDirPath) [eventStream removePath:externalGitDirPath];
+	if (eventStream) [[NSNotificationCenter defaultCenter] removeObserver:self
+																	 name:OAFSEventStreamNotification
 																   object:eventStream];
-	
+
 	eventStream = newEventStream;
-	
+
 	if (eventStream) [[NSNotificationCenter defaultCenter] addObserver:self
 															  selector:@selector(eventStreamDidUpdate:)
 																  name:OAFSEventStreamNotification
 																object:eventStream];
 	if (path) [eventStream addPath:path];
+	if (externalGitDirPath) [eventStream addPath:externalGitDirPath];
 }
 
 - (void) setPath:(NSString *)aPath
 {
 	if (aPath == path) return;
-	
+
+	NSString* oldExternalGitDirPath = [self externalGitDirPath];
+
 	if (path) [eventStream removePath:path];
-	
+
 	path = [aPath copy];
-	
+
 	if (path) [eventStream addPath:path];
+
+	// Whether the git dir needs its own watch root depends on path, so recheck.
+	[self updateExternalGitDirPathWatchFrom:oldExternalGitDirPath];
+}
+
+- (void) setGitDirPath:(NSString*)aPath
+{
+	if (aPath == gitDirPath || [aPath isEqualToString:gitDirPath]) return;
+
+	NSString* oldExternalGitDirPath = [self externalGitDirPath];
+
+	gitDirPath = [aPath copy];
+
+	[self updateExternalGitDirPathWatchFrom:oldExternalGitDirPath];
+}
+
+// The git dir needs its own watch root only when it lies outside the working tree
+// (linked worktrees, submodules); otherwise the folder watch already covers it.
+- (NSString*) externalGitDirPath
+{
+	if (!gitDirPath) return nil;
+	if (path && [gitDirPath hasPrefix:[path stringByAppendingString:@"/"]]) return nil;
+	return gitDirPath;
+}
+
+- (void) updateExternalGitDirPathWatchFrom:(NSString*)oldExternalGitDirPath
+{
+	NSString* newExternalGitDirPath = [self externalGitDirPath];
+	if (oldExternalGitDirPath == newExternalGitDirPath) return;
+	if (oldExternalGitDirPath && [oldExternalGitDirPath isEqualToString:newExternalGitDirPath]) return;
+
+	if (oldExternalGitDirPath) [eventStream removePath:oldExternalGitDirPath];
+	if (newExternalGitDirPath) [eventStream addPath:newExternalGitDirPath];
 }
 
 - (void) pauseDotGit
@@ -117,21 +159,20 @@
 	
 	BOOL folderDidChange = NO;
 	BOOL dotgitDidChange = NO;
-	
-	NSString* dotGitPath = [self.path stringByAppendingPathComponent:@".git"];
-	
+
+	// Git state may live outside the working tree (linked worktrees, submodules),
+	// so classify events against the resolved git dir, not <path>/.git.
+	NSString* dotGitPath = self.gitDirPath;
+
 	for (OAFSEvent* event in events)
 	{
-		if ([event containedInFolder:self.path])
+		if (dotGitPath && [event containedInFolder:dotGitPath])
 		{
-			if ([event.path isEqualToString:dotGitPath] || [event.path rangeOfString:[dotGitPath stringByAppendingString:@"/"]].location == 0)
-			{
-				dotgitDidChange = YES;
-			}
-			else
-			{
-				folderDidChange = YES;
-			}
+			dotgitDidChange = YES;
+		}
+		else if ([event containedInFolder:self.path])
+		{
+			folderDidChange = YES;
 		}
 		if (dotgitDidChange && folderDidChange) break;
 	}

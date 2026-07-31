@@ -14,6 +14,7 @@
 @synthesize UID;
 @synthesize image;
 @synthesize title;
+@synthesize subtitle;
 @synthesize tooltip;
 @synthesize badgeInteger;
 @synthesize menu;
@@ -78,6 +79,15 @@
 		return [self.object sidebarItemTitle];
 	}
 	return title;
+}
+
+- (NSString*) subtitle
+{
+	if ([self.object respondsToSelector:@selector(sidebarItemSubtitle)])
+	{
+		return [self.object sidebarItemSubtitle];
+	}
+	return subtitle;
 }
 
 - (NSString*) tooltip

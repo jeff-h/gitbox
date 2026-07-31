@@ -717,6 +717,11 @@
 	// If no branch is found the name could be empty.
 	// I make sure that the name is set nevertheless.
 	NSString* title = [repo.currentLocalRef displayName];
+	if (title && [repo isLinkedWorktree])
+	{
+		// Mark that this branch is being viewed through a worktree, not the main checkout.
+		title = [NSString stringWithFormat:@"⑂ %@", title];
+	}
 	if (title) [button setTitle:title];
 
 	// Update sync bar segment 0 (local branch label + menu)
@@ -1158,12 +1163,19 @@
 	// noop method to trigger validation callbacks
 }
 
-// Adds one checkout item per local branch, disabling branches that git would refuse to
-// check out because another worktree holds them. Returns YES if any item was added.
+// Adds one checkout item per local branch. Branches held by another worktree become
+// "switch to that working copy" items instead of checkouts (git refuses to check them
+// out here anyway). Returns YES if any item was added.
 - (BOOL) addLocalBranchCheckoutItemsToMenu:(NSMenu*)aMenu
 {
 	GBRepository* repo = self.repositoryController.repository;
-	NSDictionary* branchesCheckedOutElsewhere = [repo branchNamesCheckedOutInOtherWorktrees];
+
+	NSMutableDictionary* worktreesByBranchName = [NSMutableDictionary dictionary];
+	for (GBWorktree* worktree in [repo otherWorktrees])
+	{
+		[worktreesByBranchName setObject:worktree forKey:worktree.branchName];
+	}
+
 	BOOL hasOneItem = NO;
 	for (GBRef* localBranch in repo.localBranches)
 	{
@@ -1177,16 +1189,44 @@
 		{
 			[item setState:NSOnState];
 		}
-		NSString* otherWorktreePath = [branchesCheckedOutElsewhere objectForKey:localBranch.name];
-		if (otherWorktreePath && !isCurrent)
+		GBWorktree* worktree = [worktreesByBranchName objectForKey:localBranch.name];
+		if (worktree && !isCurrent)
 		{
-			[item setAction:NULL]; // no action: automatic menu validation disables the item
-			[item setTitle:[NSString stringWithFormat:NSLocalizedString(@"%@ — in %@", @"Toolbar"), localBranch.name, [otherWorktreePath lastPathComponent]]];
+			// Distinct selector from GBRepositoryController's switchToWorktree: — the repo
+			// controller is also in the responder chain and must not receive the menu item.
+			[item setAction:@selector(selectWorktree:)];
+			[item setRepresentedObject:worktree];
+			[item setImage:[NSImage imageWithSystemSymbolName:@"arrow.triangle.branch" accessibilityDescription:NSLocalizedString(@"Worktree", @"Toolbar")]];
+			if (@available(macOS 14.0, *))
+			{
+				item.badge = [[NSMenuItemBadge alloc] initWithString:[worktree.workingCopyPath lastPathComponent]];
+			}
+			else
+			{
+				[item setTitle:[NSString stringWithFormat:NSLocalizedString(@"%@ — in %@", @"Toolbar"), localBranch.name, [worktree.workingCopyPath lastPathComponent]]];
+			}
 		}
 		[aMenu addItem:item];
 		hasOneItem = YES;
 	}
+
+	if ([repo isLinkedWorktree])
+	{
+		[aMenu addItem:[NSMenuItem separatorItem]];
+		[aMenu addItem:[NSMenuItem menuItemWithTitle:NSLocalizedString(@"Remove This Worktree...", @"Command") action:@selector(removeCurrentWorktree:)]];
+	}
+
 	return hasOneItem;
+}
+
+- (IBAction) selectWorktree:(NSMenuItem*)sender
+{
+	[self.repositoryController switchToWorktree:[sender representedObject]];
+}
+
+- (IBAction) removeCurrentWorktree:(id)sender
+{
+	[self.repositoryController removeCurrentWorktree];
 }
 
 // Used by main menu

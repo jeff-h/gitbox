@@ -3,6 +3,7 @@
 #import "GBSidebarItemObject.h"
 
 @class GBRepository;
+@class GBWorktree;
 @class GBSubmodule;
 @class GBRef;
 @class GBRemote;
@@ -18,6 +19,9 @@
 
 @property(nonatomic, strong) GBRepository* repository;
 @property(nonatomic, strong, readonly) NSURL* url;
+// Set on controllers owned by another repository controller (submodules, row-less
+// worktree views) instead of by the sidebar.
+@property(nonatomic, weak) GBRepositoryController* parentRepositoryController;
 @property(nonatomic, strong) GBSidebarItem* sidebarItem;
 @property(nonatomic, copy) NSString* userDefinedName;
 @property(nonatomic, strong) GBRepositoryToolbarController* toolbarController;
@@ -53,6 +57,13 @@
 
 //- (void) updateCommitsIfNeeded;
 //- (void) updateRemoteState;
+
+// Retargets the window to another working copy of the same repository (spawning a
+// row-less controller for it), or back to this one when the entry is this working copy.
+- (void) switchToWorktree:(GBWorktree*)worktree;
+// Runs `git worktree remove` for this working copy (with a confirmation, and a
+// force retry if git refuses because of local changes).
+- (void) removeCurrentWorktree;
 
 - (void) checkoutRef:(GBRef*) ref;
 - (void) checkoutRef:(GBRef*) ref withNewName:(NSString*)name;

@@ -53,6 +53,10 @@
 
 @property(nonatomic, strong) OABlockTable* blockTable;
 @property(nonatomic, strong) GBFolderMonitor* folderMonitor;
+// Row-less controllers for other working copies of this repository, keyed by path.
+@property(nonatomic, strong) NSMutableDictionary* worktreeControllers;
+// Which working copy the window shows for this sidebar row; nil = this one.
+@property(nonatomic, strong) GBRepositoryController* activeWorktreeController;
 @property(nonatomic, assign) BOOL isDisappearedFromFileSystem;
 @property(nonatomic, assign) BOOL isCommitting;
 
@@ -540,22 +544,30 @@
 
 - (NSString*) windowTitle
 {
+	if (self.activeWorktreeController) return [self.activeWorktreeController windowTitle];
 	return self.userDefinedName.length > 0 ? self.userDefinedName : [[[self url] path] twoLastPathComponentsWithDash];
 }
 
 - (NSURL*) windowRepresentedURL
 {
+	if (self.activeWorktreeController) return [self.activeWorktreeController windowRepresentedURL];
 	return [self url];
 }
 
 - (void) willDeselectWindowItem
 {
 	selected = NO;
+	[self.activeWorktreeController willDeselectWindowItem];
 }
 
 - (void) didSelectWindowItem
 {
 	selected = YES;
+	if (self.activeWorktreeController)
+	{
+		[self.activeWorktreeController didSelectWindowItem];
+		return;
+	}
 	self.toolbarController.repositoryController = self;
 	self.viewController.repositoryController = self;
 	
@@ -823,6 +835,14 @@
 	
 	[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(initialUpdate) object:nil];
 	
+	for (GBRepositoryController* ctrl in [self.worktreeControllers allValues])
+	{
+		[ctrl removeObserverForAllSelectors:self];
+		[ctrl stop];
+	}
+	self.worktreeControllers = nil;
+	self.activeWorktreeController = nil;
+
 	if (self.toolbarController.repositoryController == self) self.toolbarController.repositoryController = nil;
 	if (self.viewController.repositoryController == self) self.viewController.repositoryController = nil;
 	self.folderMonitor.target = nil;
@@ -1716,6 +1736,147 @@
 	[self checkoutHelper:^(void(^block)()){
 		[self.repository checkoutRef:ref withNewName:name block:block];
 	}];
+}
+
+
+#pragma mark Worktrees
+
+
+- (void) switchToWorktree:(GBWorktree*)worktree
+{
+	// Worktree families are managed by the sidebar-row controller.
+	if (self.parentRepositoryController)
+	{
+		[self.parentRepositoryController switchToWorktree:worktree];
+		return;
+	}
+
+	NSString* path = [worktree.workingCopyPath stringByStandardizingPath];
+	if (!path) return;
+
+	if ([path isEqualToString:[self.repository.path stringByStandardizingPath]])
+	{
+		[self activateWorktreeController:nil];
+		return;
+	}
+
+	if (![GBRepository isValidRepositoryPath:path])
+	{
+		[NSAlert message:NSLocalizedString(@"Cannot open the worktree.", @"App") description:path];
+		return;
+	}
+
+	GBRepositoryController* ctrl = [self.worktreeControllers objectForKey:path];
+	if (!ctrl)
+	{
+		ctrl = [GBRepositoryController repositoryControllerWithURL:[NSURL fileURLWithPath:path isDirectory:YES]];
+		ctrl.parentRepositoryController = self;
+		ctrl.toolbarController = self.toolbarController;
+		ctrl.viewController = self.viewController;
+		[ctrl addObserverForAllSelectors:self];
+		ctrl.fsEventStream = self.fsEventStream;
+		[ctrl start];
+		if (!self.worktreeControllers) self.worktreeControllers = [NSMutableDictionary dictionary];
+		[self.worktreeControllers setObject:ctrl forKey:path];
+	}
+	[self activateWorktreeController:ctrl];
+}
+
+- (void) activateWorktreeController:(GBRepositoryController*)newCtrl
+{
+	GBRepositoryController* oldCtrl = self.activeWorktreeController;
+	if (oldCtrl == newCtrl) return;
+
+	self.activeWorktreeController = newCtrl;
+
+	if (!selected) return;
+
+	if (oldCtrl) [oldCtrl willDeselectWindowItem];
+	if (newCtrl)
+	{
+		[newCtrl didSelectWindowItem];
+	}
+	else
+	{
+		[self didSelectWindowItem]; // activeWorktreeController is nil, so this routes to self
+	}
+
+	// Window title and represented URL follow the active working copy; the sidebar
+	// selection did not change, so poke the window controller to re-read them.
+	GBMainWindowController* windowController = [GBMainWindowController instance];
+	if (windowController.selectedWindowItem == (id<GBMainWindowItem>)self)
+	{
+		windowController.selectedWindowItem = nil;
+		windowController.selectedWindowItem = (id<GBMainWindowItem>)self;
+	}
+}
+
+- (void) disposeWorktreeController:(GBRepositoryController*)ctrl
+{
+	if (!ctrl) return;
+	if (ctrl == self.activeWorktreeController) [self activateWorktreeController:nil];
+	[ctrl removeObserverForAllSelectors:self];
+	[ctrl stop];
+	[self.worktreeControllers removeObjectsForKeys:[self.worktreeControllers allKeysForObject:ctrl]];
+}
+
+// A row-less worktree child's folder vanished or moved (e.g. `git worktree remove`
+// from a terminal): drop the child and fall back to our own checkout.
+// Submodule children notify this selector too — they are managed by
+// setSubmoduleControllers:, so only act on our own worktree children.
+- (void) repositoryController:(GBRepositoryController*)childCtrl didMoveToURL:(NSURL*)newURL
+{
+	if ([[self.worktreeControllers allValues] containsObject:childCtrl])
+	{
+		[self disposeWorktreeController:childCtrl];
+	}
+}
+
+- (void) removeCurrentWorktree
+{
+	GBRepository* repo = self.repository;
+	if (![repo isLinkedWorktree]) return;
+
+	NSString* worktreePath = repo.path;
+	NSString* commonGitDirPath = repo.commonGitDirURL.path;
+
+	if (![NSAlert prompt:[NSString stringWithFormat:NSLocalizedString(@"Remove the worktree “%@”?", @"App"), [worktreePath lastPathComponent]]
+			 description:[NSString stringWithFormat:NSLocalizedString(@"The folder %@ will be deleted. The branch itself is kept.", @"App"), worktreePath]
+					  ok:NSLocalizedString(@"Remove", @"App")]) return;
+
+	// Leave the dying working copy before deleting it from under its monitors.
+	// For a sidebar-row worktree there is no parent; FSEvents will notice the deletion
+	// and remove the row through the usual disappeared-repository flow.
+	// Disposal drops our last strong references, so pin self for the rest of the method.
+	NS_VALID_UNTIL_END_OF_SCOPE GBRepositoryController* keepAlive = self;
+	[keepAlive.parentRepositoryController disposeWorktreeController:keepAlive];
+
+	BOOL removed = [[self class] removeWorktreeAtPath:worktreePath commonGitDirPath:commonGitDirPath forced:NO];
+	if (!removed)
+	{
+		if ([NSAlert prompt:NSLocalizedString(@"The worktree contains local changes or git refused to remove it.", @"App")
+				description:NSLocalizedString(@"Remove it anyway? Uncommitted changes will be lost.", @"App")
+						 ok:NSLocalizedString(@"Force Remove", @"App")])
+		{
+			[[self class] removeWorktreeAtPath:worktreePath commonGitDirPath:commonGitDirPath forced:YES];
+		}
+	}
+}
+
++ (BOOL) removeWorktreeAtPath:(NSString*)worktreePath commonGitDirPath:(NSString*)commonGitDirPath forced:(BOOL)forced
+{
+	OATask* task = [OATask task];
+	task.currentDirectoryPath = commonGitDirPath;
+	task.launchPath = [GBTask pathToBundledBinary:@"git"];
+	task.arguments = forced
+		? [NSArray arrayWithObjects:@"worktree", @"remove", @"--force", worktreePath, nil]
+		: [NSArray arrayWithObjects:@"worktree", @"remove", worktreePath, nil];
+	[task launchAndWait];
+	if ([task isError] && forced)
+	{
+		[NSAlert message:NSLocalizedString(@"Could not remove the worktree.", @"App") description:[task UTF8OutputStripped]];
+	}
+	return ![task isError];
 }
 
 - (void) checkoutNewBranchWithName:(NSString*)name commit:(GBCommit*)aCommit

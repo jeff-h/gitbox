@@ -14,6 +14,14 @@
 @class OABlockTransaction;
 @class GBGitConfig;
 
+// Another working copy sharing the same repository: the main checkout or a linked worktree.
+@interface GBWorktree : NSObject
+@property(nonatomic, copy) NSString* branchName;       // checked-out branch; nil when detached
+@property(nonatomic, copy) NSString* workingCopyPath;
+@property(nonatomic, assign) BOOL isMainCheckout;
+@end
+
+
 @interface GBRepository : NSObject
 
 @property(nonatomic, strong) NSURL* url;
@@ -71,9 +79,12 @@
 
 // YES when this repository is a linked worktree sharing a main repository's git dir.
 - (BOOL) isLinkedWorktree;
-// Branch names checked out in other working copies of the same repository (the main
-// checkout and sibling linked worktrees), mapped to that working copy's path.
-// Git refuses to check these branches out here. Cheap filesystem sniff — recomputed per call.
+// GBWorktree entries for the other working copies of the same repository (the main
+// checkout and sibling linked worktrees), excluding this one and detached checkouts.
+// Cheap filesystem sniff — recomputed per call.
+- (NSArray*) otherWorktrees;
+// Branch names from otherWorktrees mapped to that working copy's path.
+// Git refuses to check these branches out here.
 - (NSDictionary*) branchNamesCheckedOutInOtherWorktrees;
 
 

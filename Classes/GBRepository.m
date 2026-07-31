@@ -30,6 +30,10 @@
 #import "NSAlert+OAAlertHelpers.h"
 #import "NSObject+OASelectorNotifications.h"
 
+@implementation GBWorktree
+@end
+
+
 @interface GBRepository ()
 
 @property(nonatomic, strong, readwrite) NSData* URLBookmarkData;
@@ -484,9 +488,9 @@
 	return ![self.gitDirURL isEqual:self.commonGitDirURL];
 }
 
-- (NSDictionary*) branchNamesCheckedOutInOtherWorktrees
+- (NSArray*) otherWorktrees
 {
-	NSMutableDictionary* branchNames = [NSMutableDictionary dictionary];
+	NSMutableArray* worktrees = [NSMutableArray array];
 	NSFileManager* fm = [NSFileManager defaultManager];
 	NSString* commonDirPath = self.commonGitDirURL.path;
 	NSString* ownGitDirPath = self.gitDirURL.path;
@@ -497,7 +501,14 @@
 	{
 		NSString* headContents = [NSString stringWithContentsOfFile:[commonDirPath stringByAppendingPathComponent:@"HEAD"] encoding:NSUTF8StringEncoding error:NULL];
 		NSString* branchName = [[self class] branchNameFromHEADContents:headContents];
-		if (branchName) [branchNames setObject:[commonDirPath stringByDeletingLastPathComponent] forKey:branchName];
+		if (branchName)
+		{
+			GBWorktree* worktree = [GBWorktree new];
+			worktree.branchName = branchName;
+			worktree.workingCopyPath = [commonDirPath stringByDeletingLastPathComponent];
+			worktree.isMainCheckout = YES;
+			[worktrees addObject:worktree];
+		}
 	}
 
 	// Sibling linked worktrees: each has an admin dir <commondir>/worktrees/<name> holding
@@ -515,9 +526,22 @@
 		NSString* backPointer = [[NSString stringWithContentsOfFile:[adminDirPath stringByAppendingPathComponent:@"gitdir"] encoding:NSUTF8StringEncoding error:NULL] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
 		if (![[backPointer lastPathComponent] isEqualToString:@".git"]) continue; // broken or prunable worktree
 
-		[branchNames setObject:[backPointer stringByDeletingLastPathComponent] forKey:branchName];
+		GBWorktree* worktree = [GBWorktree new];
+		worktree.branchName = branchName;
+		worktree.workingCopyPath = [backPointer stringByDeletingLastPathComponent];
+		[worktrees addObject:worktree];
 	}
 
+	return worktrees;
+}
+
+- (NSDictionary*) branchNamesCheckedOutInOtherWorktrees
+{
+	NSMutableDictionary* branchNames = [NSMutableDictionary dictionary];
+	for (GBWorktree* worktree in [self otherWorktrees])
+	{
+		[branchNames setObject:worktree.workingCopyPath forKey:worktree.branchName];
+	}
 	return branchNames;
 }
 

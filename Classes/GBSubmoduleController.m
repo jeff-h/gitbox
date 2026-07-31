@@ -9,7 +9,6 @@
 }
 
 @synthesize submodule=_submodule;
-@synthesize parentRepositoryController=_parentRepositoryController;
 
 
 + (GBSubmoduleController*) controllerWithSubmodule:(GBSubmodule*)submodule

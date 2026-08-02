@@ -1196,9 +1196,9 @@
 			// controller is also in the responder chain and must not receive the menu item.
 			[item setAction:@selector(selectWorktree:)];
 			[item setRepresentedObject:worktree];
-			// The icon marks the action (jumps to another working copy), the badge marks the
-			// noun (that copy is a linked worktree) — so the main checkout gets no badge.
-			[item setImage:[NSImage imageWithSystemSymbolName:@"arrow.triangle.branch" accessibilityDescription:NSLocalizedString(@"Worktree", @"Toolbar")]];
+			// Whether we get there by checking out or by retargeting the window is ours to know,
+			// not the user's: either way they end up looking at that branch. So the only mark is
+			// the badge — the branch lives in a worktree — and the main checkout carries none.
 			if (!worktree.isMainCheckout) [self badgeMenuItemAsWorktree:item];
 		}
 		else if (isCurrent && [repo isLinkedWorktree])

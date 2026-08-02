@@ -1196,15 +1196,14 @@
 			// controller is also in the responder chain and must not receive the menu item.
 			[item setAction:@selector(selectWorktree:)];
 			[item setRepresentedObject:worktree];
+			// The icon marks the action (jumps to another working copy), the badge marks the
+			// noun (that copy is a linked worktree) — so the main checkout gets no badge.
 			[item setImage:[NSImage imageWithSystemSymbolName:@"arrow.triangle.branch" accessibilityDescription:NSLocalizedString(@"Worktree", @"Toolbar")]];
-			if (@available(macOS 14.0, *))
-			{
-				item.badge = [[NSMenuItemBadge alloc] initWithString:[worktree.workingCopyPath lastPathComponent]];
-			}
-			else
-			{
-				[item setTitle:[NSString stringWithFormat:NSLocalizedString(@"%@ — in %@", @"Toolbar"), localBranch.name, [worktree.workingCopyPath lastPathComponent]]];
-			}
+			if (!worktree.isMainCheckout) [self badgeMenuItemAsWorktree:item];
+		}
+		else if (isCurrent && [repo isLinkedWorktree])
+		{
+			[self badgeMenuItemAsWorktree:item];
 		}
 		[aMenu addItem:item];
 		hasOneItem = YES;
@@ -1217,6 +1216,18 @@
 	}
 
 	return hasOneItem;
+}
+
+- (void) badgeMenuItemAsWorktree:(NSMenuItem*)item
+{
+	if (@available(macOS 14.0, *))
+	{
+		item.badge = [[NSMenuItemBadge alloc] initWithString:NSLocalizedString(@"worktree", @"Toolbar")];
+	}
+	else
+	{
+		[item setTitle:[NSString stringWithFormat:NSLocalizedString(@"%@ — worktree", @"Toolbar"), item.title]];
+	}
 }
 
 - (IBAction) selectWorktree:(NSMenuItem*)sender

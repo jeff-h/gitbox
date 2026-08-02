@@ -28,19 +28,11 @@
 
 #import "GBAsyncUpdater.h"
 
-#define DEBUG_iRate 0
-
-#if DEBUG_iRate
-#warning Debugging iRate
-#endif
-
-#import "iRate.h"
-
 #if !GITBOX_APP_STORE
 #import "Sparkle/Sparkle.h"
 #endif
 
-@interface GBAppDelegate () <NSApplicationDelegate, NSOpenSavePanelDelegate, iRateDelegate>
+@interface GBAppDelegate () <NSApplicationDelegate, NSOpenSavePanelDelegate>
 
 @property(nonatomic) GBRootController* rootController;
 @property(nonatomic) GBMainWindowController* windowController;
@@ -55,15 +47,6 @@
 
 @implementation GBAppDelegate {
 	NSUInteger _diffToolsControllerIndex;
-}
-
-+ (void) initialize
-{
-#if GITBOX_APP_STORE || DEBUG_iRate
-	// http://itunes.apple.com/us/app/gitbox/id403388357
-	[iRate sharedInstance].appStoreID = 403388357;
-	[iRate sharedInstance].eventsUntilPrompt = 200; // 200 commits before prompt
-#endif
 }
 
 + (GBAppDelegate*) instance
@@ -89,12 +72,8 @@
 
 - (IBAction) rateInAppStore:(id)sender
 {
-#if GITBOX_APP_STORE || DEBUG_iRate  
-	[[iRate sharedInstance] openRatingsPageInAppStore];
-#else
 	NSString* purchaseURLString = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"GBAppStoreURL"];
 	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:purchaseURLString]];
-#endif
 }
 
 - (IBAction) showMainWindow:(id)sender
@@ -174,7 +153,6 @@
 
 - (void) applicationDidFinishLaunching:(NSNotification*) aNotification
 {
-	[iRate sharedInstance].delegate = self;
 	GBApp.didTerminateSafely = [[NSUserDefaults standardUserDefaults] boolForKey:@"GBDidTerminateSafely"];
 	[[NSUserDefaults standardUserDefaults] removeObjectForKey:@"GBDidTerminateSafely"];
 	[[NSUserDefaults standardUserDefaults] synchronize];
@@ -201,15 +179,6 @@
 			[[SUUpdater sharedUpdater] checkForUpdatesInBackground];
 		});
 	#endif
-#endif
-	
-#if DEBUG_iRate
-#warning DEBUG: launching iRate dialog on start
-    double delayInSeconds = 1.0;
-    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
-    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-		[[iRate sharedInstance] promptForRating];
-    });
 #endif
 	
 	[self updateAppleEvents];
@@ -399,15 +368,6 @@
 	}
 }
 
-
-- (BOOL)iRateShouldPromptForRating
-{
-#if GITBOX_APP_STORE || DEBUG_iRate
-	return YES;
-#else
-	return NO;
-#endif
-}
 
 
 

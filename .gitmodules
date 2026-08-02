@@ -1,9 +1,3 @@
-[submodule "iRate"]
-	path = iRate
-	url = https://github.com/nicklockwood/iRate.git
-[submodule "libgit2"]
-	path = libgit2
-	url = git@github.com:oleganza/libgit2.git
 [submodule "MASPreferences"]
 	path = MASPreferences
 	url = https://github.com/oleganza/MASPreferences

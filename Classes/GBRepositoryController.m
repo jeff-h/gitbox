@@ -42,10 +42,6 @@
 #import "NSMenu+OAMenuHelpers.h"
 
 
-#if GITBOX_APP_STORE || DEBUG_iRate
-#import "iRate.h"
-#endif
-
 
 #define GB_STRESS_TEST_AUTOFETCH 0
 
@@ -2190,12 +2186,6 @@
 				NSLog(@"Cannot find current ref's commit id. Clearing up undo stack.");
 				[self.undoManager removeAllActions];
 			}
-			
-			
-#if GITBOX_APP_STORE || DEBUG_iRate
-			[[iRate sharedInstance] logEvent:NO];
-#endif
-
 		}];
 		
 		[self notifyWithSelector:@selector(repositoryControllerDidCommit:)];

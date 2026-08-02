@@ -35,6 +35,19 @@ class GBSidebarCellView: NSTableCellView, NSTextFieldDelegate {
     private static let rightPadding: CGFloat = 4
     private static let elementGap: CGFloat = 6
 
+    // Label heights come from font metrics, never from the labels themselves. A text field's
+    // intrinsicContentSize.height varies with its current frame, so feeding it back into that
+    // frame oscillates between two rounded values (16 vs 16.4999...) and the layout engine
+    // spins until AppKit aborts the app with "Degenerate layout!".
+    private static let titleHeight: CGFloat = lineHeight(ofSize: fontSize)
+    private static let subtitleHeight: CGFloat = lineHeight(ofSize: subtitleFontSize)
+
+    private static func lineHeight(ofSize size: CGFloat) -> CGFloat {
+        let font = NSFont.systemFont(ofSize: size)
+        // "Ag" spans a full ascender-to-descender line, so this measures the line box, not the glyphs present.
+        return ceil(("Ag" as NSString).size(withAttributes: [.font: font]).height)
+    }
+
     // MARK: - Init
 
     override init(frame frameRect: NSRect) {
@@ -279,7 +292,7 @@ class GBSidebarCellView: NSTableCellView, NSTextFieldDelegate {
             textX = Self.iconMarginLeft + Self.iconFrameSize + Self.iconMarginRight
         }
         let textWidth = max(rightEdge - textX, 0)
-        let textHeight = titleLabel.intrinsicContentSize.height
+        let textHeight = Self.titleHeight
         let textY = round((bounds.height - textHeight) / 2)
 
         if subtitleLabel.isHidden {
@@ -294,7 +307,7 @@ class GBSidebarCellView: NSTableCellView, NSTextFieldDelegate {
 
             let subtitleX = titleLabel.frame.maxX + Self.elementGap
             let subtitleWidth = max(rightEdge - subtitleX, 0)
-            let subtitleHeight = subtitleLabel.intrinsicContentSize.height
+            let subtitleHeight = Self.subtitleHeight
             let subtitleY = round((bounds.height - subtitleHeight) / 2)
             subtitleLabel.frame = NSRect(x: subtitleX, y: subtitleY, width: subtitleWidth, height: subtitleHeight)
         }

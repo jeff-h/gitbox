@@ -820,7 +820,6 @@
 		208B3284137505D600EB4A18 /* GBSearchBarController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = GBSearchBarController.xib; sourceTree = "<group>"; };
 		208D086113981084002C8072 /* GBTaskWithProgress.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GBTaskWithProgress.h; sourceTree = "<group>"; };
 		208D086213981084002C8072 /* GBTaskWithProgress.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GBTaskWithProgress.m; sourceTree = "<group>"; };
-		208D0A3913983C99002C8072 /* git.bundle-1.7.7.2.3.g19dee.tar */ = {isa = PBXFileReference; lastKnownFileType = archive.tar; path = "git.bundle-1.7.7.2.3.g19dee.tar"; sourceTree = "<group>"; };
 		208D0AB0139844FC002C8072 /* GBRepositorySettingsController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = GBRepositorySettingsController.xib; sourceTree = "<group>"; };
 		208D0AB313984512002C8072 /* GBRepositorySettingsController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GBRepositorySettingsController.h; sourceTree = "<group>"; };
 		208D0AB413984512002C8072 /* GBRepositorySettingsController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GBRepositorySettingsController.m; sourceTree = "<group>"; };
@@ -1781,7 +1780,6 @@
 			children = (
 				2016439012CC0F2E005C69DA /* author.png */,
 				20F2FF24181DC80600701116 /* git.bundle-2.50.1.tar */,
-				208D0A3913983C99002C8072 /* git.bundle-1.7.7.2.3.g19dee.tar */,
 				203976631251A63700770D13 /* Credits.rtf */,
 				2010732E11A7E9C300EFDE56 /* app.icns */,
 				202F565D145D96EA006927F6 /* Gitbox.entitlements */,

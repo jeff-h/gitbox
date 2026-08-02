@@ -4,9 +4,6 @@
 [submodule "libgit2"]
 	path = libgit2
 	url = git@github.com:oleganza/libgit2.git
-[submodule "git"]
-	path = git
-	url = git@github.com:oleganza/git.git
 [submodule "MASPreferences"]
 	path = MASPreferences
 	url = https://github.com/oleganza/MASPreferences

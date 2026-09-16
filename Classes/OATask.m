@@ -141,6 +141,8 @@ NSString* OATaskDidDeallocateNotification  = @"OATaskDidDeallocateNotification";
 	[task setCurrentDirectoryPath:NSHomeDirectory()];
 	[task setLaunchPath:@"/usr/bin/which"];
 	[task setArguments:[NSArray arrayWithObjects:executable, nil]];
+	NSString* shellPath = [self loginShellPATH];
+	if (shellPath) [task setEnvironment:@{@"PATH": shellPath}];
 	
 	NSPipe* pipe = [NSPipe pipe];
 	[task setStandardOutput:pipe];
@@ -196,6 +198,53 @@ NSString* OATaskDidDeallocateNotification  = @"OATaskDidDeallocateNotification";
 		}
 	}
 	return nil;  
+}
+
+// PATH as the user's login shell sees it. GUI apps inherit launchd's bare
+// PATH (/usr/bin:/bin:/usr/sbin:/sbin), so anything a git hook needs from
+// Homebrew, nvm, etc. is invisible unless we ask the shell. Resolved once;
+// nil if the shell can't be run.
++ (NSString*) loginShellPATH
+{
+	static NSString* loginShellPATH = nil;
+	static dispatch_once_t onceToken;
+	dispatch_once(&onceToken, ^{
+		NSString* shell = [[[NSProcessInfo processInfo] environment] objectForKey:@"SHELL"];
+		if (!shell) shell = @"/bin/zsh";
+
+		NSTask* task = [[NSTask alloc] init];
+		[task setCurrentDirectoryPath:NSHomeDirectory()];
+		[task setLaunchPath:shell];
+		// Login (not interactive) so .zprofile-style PATH setup runs without prompts or .zshrc chatter.
+		[task setArguments:@[@"-l", @"-c", @"echo \"$PATH\""]];
+
+		NSPipe* pipe = [NSPipe pipe];
+		[task setStandardOutput:pipe];
+		[task setStandardInput:[NSFileHandle fileHandleWithNullDevice]];
+		[task setStandardError:[NSFileHandle fileHandleWithNullDevice]];
+
+		NSData* data = nil;
+		@try
+		{
+			[task launch];
+			data = [[pipe fileHandleForReading] readDataToEndOfFile];
+			[task waitUntilExit];
+		}
+		@catch (NSException* exception)
+		{
+			NSLog(@"[OATask loginShellPATH]: failed to run %@: %@", shell, exception);
+			return;
+		}
+
+		if ([task terminationStatus] != 0)
+		{
+			NSLog(@"[OATask loginShellPATH]: %@ exited with status %d", shell, [task terminationStatus]);
+			return;
+		}
+		NSString* path = [[data UTF8String] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+		if ([path length] > 0) loginShellPATH = path;
+	});
+	return loginShellPATH;
 }
 
 + (NSString*) systemPathForExecutable:(NSString*)executable
@@ -614,10 +663,13 @@ NSString* OATaskDidDeallocateNotification  = @"OATaskDidDeallocateNotification";
 	[self.nstask setArguments:     self.arguments ? self.arguments : [NSArray array]];
 	NSString* binPath = [self.launchPath stringByDeletingLastPathComponent];
 	NSMutableDictionary* environment = [[[NSProcessInfo processInfo] environment] mutableCopy];
-	NSString* path = [environment objectForKey:@"PATH"];
-	if (!path) path = binPath;
-	else path = [path stringByAppendingFormat:@":%@", binPath];
-	[environment setObject:path forKey:@"PATH"];
+	NSMutableArray* pathComponents = [NSMutableArray array];
+	NSString* shellPath = [[self class] loginShellPATH];
+	if (shellPath) [pathComponents addObject:shellPath];
+	NSString* inheritedPath = [environment objectForKey:@"PATH"];
+	if (inheritedPath) [pathComponents addObject:inheritedPath];
+	[pathComponents addObject:binPath];
+	[environment setObject:[pathComponents componentsJoinedByString:@":"] forKey:@"PATH"];
 	
 	[environment setObject:@":0" forKey:@"DISPLAY"];
 

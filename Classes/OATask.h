@@ -95,6 +95,9 @@ extern NSString* OATaskDidDeallocateNotification;
 // A full path to system executable (e.g. "opendiff") using 'which' and a list of well-known locations. Returns nil if no path is found.
 + (NSString*) systemPathForExecutable:(NSString*)executable;
 
+// PATH as the user's login shell sees it (Homebrew, nvm, etc.), resolved once. nil if the shell can't be run.
++ (NSString*) loginShellPATH;
+
 // Add/modify environment variables 
 - (void) setEnvironmentValue:(NSString*)value forKey:(NSString*)key;
 - (void) mergeEnvironment:(NSDictionary*)dict;
